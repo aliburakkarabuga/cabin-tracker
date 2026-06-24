@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cabin Simulator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #111;
+      color: #f0f0f0;
+      min-height: 100vh;
+      padding: 3rem 2rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    header h1 { font-size: 11px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: #f0f0f0; }
+    header p  { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #444; margin-top: 6px; }
+
+    /* ── Store selector ── */
+    .store-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .store-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .store-btn:hover    { border-color: #666; color: #f0f0f0; }
+    .store-btn.active   { border-color: #f0f0f0; color: #f0f0f0; }
+
+    /* ── Bulk actions ── */
+    .bulk-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .bulk-btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      border: 1px solid #2a2a2a;
+      background: #1a1a1a;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bulk-btn:hover { border-color: #555; color: #f0f0f0; }
+
+    /* ── Cabin grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1px;
+      background: #1e1e1e;
+      border: 1px solid #1e1e1e;
+      max-width: 860px;
+    }
+
+    .cabin-row {
+      background: #111;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: background 0.15s;
+    }
+    .cabin-row:hover { background: #141414; }
+
+    .cabin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .cabin-label {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .cabin-timer {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: #a0a060;
+      min-width: 28px;
+      text-align: right;
+    }
+
+    .state-display {
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      min-height: 16px;
+    }
+    .state-display.empty    { color: #5cb85c; }
+    .state-display.full     { color: #f0f0f0; }
+    .state-display.clearing { color: #a0a060; }
+
+    .buttons { display: flex; gap: 6px; }
+    button.cabin-btn {
+      flex: 1;
+      padding: 8px 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid #2a2a2a;
+      background: transparent;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    button.cabin-btn:hover         { border-color: #666; color: #f0f0f0; }
+    button.cabin-btn.active-empty   { border-color: #5cb85c; color: #5cb85c; }
+    button.cabin-btn.active-full    { border-color: #f0f0f0; color: #111; background: #f0f0f0; }
+    button.cabin-btn.active-clearing{ border-color: #a0a060; color: #a0a060; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 2rem;
+      margin: 1.5rem 0 0;
+      max-width: 860px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 300;
+      color: #f0f0f0;
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      margin-top: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      max-width: 860px;
+    }
+    .connection {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .conn-dot { width: 5px; height: 5px; border-radius: 50%; background: #333; transition: background 0.3s; }
+    .conn-dot.connected    { background: #f0f0f0; }
+    .conn-dot.reconnecting { background: #a0a030; animation: blink 1s infinite; }
+
+    .shortcuts {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      color: #333;
+    }
+    .shortcuts span { color: #555; margin: 0 4px; }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cabin Simulator</h1>
+    <p id="header-sub">Sensor control panel</p>
+  </div>
+  <div class="store-bar" id="store-bar">
+    <!-- store butonları JS ile doldurulur -->
+  </div>
+</header>
+
+<div class="bulk-bar">
+  <button class="bulk-btn" onclick="bulkSet('empty')">All Empty</button>
+  <button class="bulk-btn" onclick="bulkSet('full')">All Full</button>
+  <button class="bulk-btn" onclick="bulkSet('clearing')">All Clearing</button>
+  <button class="bulk-btn" onclick="randomize()">Randomize</button>
+</div>
+
+<div class="grid" id="simulator-grid"></div>
+
+<div class="stats-bar" id="stats-bar">
+  <div class="stat"><span class="stat-value" id="stat-free">—</span><span class="stat-label">Free</span></div>
+  <div class="stat"><span class="stat-value" id="stat-occ">—</span><span class="stat-label">Occupied</span></div>
+  <div class="stat"><span class="stat-value" id="stat-clr">—</span><span class="stat-label">Clearing</span></div>
+  <div class="stat"><span class="stat-value" id="stat-total">—</span><span class="stat-label">Total</span></div>
+</div>
+
+<div class="footer">
+  <div class="connection">
+    <div class="conn-dot" id="conn-dot"></div>
+    <span id="conn-label">Connecting…</span>
+  </div>
+  <div class="shortcuts">
+    Keyboard:<span>E</span>empty<span>F</span>full<span>C</span>clearing — select cabin first
+  </div>
+</div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────────────────
+  const urlParams   = new URLSearchParams(window.location.search);
+  const CLEARING_MS = 30 * 1000;
+  const LABELS      = { empty: 'Available', full: 'Occupied', clearing: 'Preparing' };
+  const BTN_LABELS  = { empty: 'Empty', full: 'Full', clearing: 'Clearing' };
+
+  // ─── STATE ───────────────────────────────────────────────────────────────────
+  let cabins       = [];
+  let ws           = null;
+  let retryTimeout = null;
+  let retryDelay   = 1000;
+  let stores       = [];           // sunucudan çekilen store listesi
+  let currentStore = urlParams.get('store') || 'store-001';
+  let selectedCabin = null;        // klavye shortcut için
+  const timerEndsAt = {};
+
+  // ─── FETCH STORES ─────────────────────────────────────────────────────────────
+  async function loadStores() {
+    try {
+      const res = await fetch('http://localhost:3000/api/stores');
+      stores = await res.json();
+      renderStoreBar();
+    } catch {
+      // server henüz ayakta değil, sadece mevcut store'u göster
+      stores = [{ id: currentStore, name: currentStore }];
+      renderStoreBar();
+    }
+  }
+
+  function renderStoreBar() {
+    const bar = document.getElementById('store-bar');
+    bar.innerHTML = '';
+    stores.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'store-btn' + (s.id === currentStore ? ' active' : '');
+      btn.textContent = s.name || s.id;
+      btn.onclick = () => switchStore(s.id);
+      bar.appendChild(btn);
+    });
+  }
+
+  function switchStore(storeId) {
+    currentStore = storeId;
+    renderStoreBar();
+    connect();
+  }
+
+  // ─── WEBSOCKET ───────────────────────────────────────────────────────────────
+  function connect() {
+    if (ws) { ws.onclose = null; ws.close(); }
+    clearTimeout(retryTimeout);
+
+    const dot   = document.getElementById('conn-dot');
+    const label = document.getElementById('conn-label');
+
+    ws = new WebSocket(`ws://localhost:3000?store=${currentStore}`);
+
+    ws.onopen = () => {
+      retryDelay = 1000;
+      dot.className  = 'conn-dot connected';
+      label.textContent = `Connected · ${currentStore}`;
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'init') {
+          cabins = data.cabins;
+          document.getElementById('header-sub').textContent = data.storeName || currentStore;
+          renderGrid();
+        }
+        if (data.type === 'update') {
+          const cabin = cabins.find(c => c.id === data.id);
+          if (cabin) cabin.state = data.state;
+          updateRow(data.id, data.state);
+          updateStats();
+        }
+      } catch (err) {
+        console.error('Parse error:', err);
+      }
+    };
+
+    ws.onclose = () => {
+      dot.className  = 'conn-dot reconnecting';
+      label.textContent = 'Reconnecting…';
+      retryTimeout = setTimeout(() => {
+        connect();
+        retryDelay = Math.min(retryDelay * 2, 16000);
+      }, retryDelay);
+    };
+
+    ws.onerror = () => ws.close();
+  }
+
+  // ─── SEND ────────────────────────────────────────────────────────────────────
+  function sendUpdate(id, state) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'update', id, state }));
+    // optimistic update — server echo'su gelince de tekrar işlenir, sorun yok
+    const cabin = cabins.find(c => c.id === id);
+    if (cabin) cabin.state = state;
+    updateRow(id, state);
+    updateStats();
+  }
+
+  // ─── BULK ACTIONS ────────────────────────────────────────────────────────────
+  function bulkSet(state) {
+    cabins.forEach(c => sendUpdate(c.id, state));
+  }
+
+  function randomize() {
+    const states = ['empty', 'empty', 'full', 'clearing']; // ağırlıklı empty
+    cabins.forEach(c => sendUpdate(c.id, states[Math.floor(Math.random() * states.length)]));
+  }
+
+  // ─── RENDER ──────────────────────────────────────────────────────────────────
+  function renderGrid() {
+    const grid = document.getElementById('simulator-grid');
+    grid.innerHTML = '';
+    cabins.forEach(cabin => {
+      const row = document.createElement('div');
+      row.className = 'cabin-row';
+      row.id = `row-${cabin.id}`;
+      row.onclick = () => { selectedCabin = cabin.id; highlightSelected(); };
+      row.innerHTML = `
+        <div class="cabin-header">
+          <span class="cabin-label">Cabin ${String(cabin.id).padStart(2, '0')}</span>
+          <span class="cabin-timer" id="ct-${cabin.id}"></span>
+        </div>
+        <span class="state-display ${cabin.state}" id="sd-${cabin.id}">${LABELS[cabin.state]}</span>
+        <div class="buttons">
+          ${Object.keys(BTN_LABELS).map(s => `
+            <button class="cabin-btn ${cabin.state === s ? `active-${s}` : ''}"
+              data-state="${s}"
+              onclick="event.stopPropagation(); sendUpdate(${cabin.id}, '${s}')">
+              ${BTN_LABELS[s]}
+            </button>
+          `).join('')}
+        </div>
+      `;
+      grid.appendChild(row);
+    });
+    updateStats();
+  }
+
+  function updateRow(id, state) {
+    const row = document.getElementById(`row-${id}`);
+    if (!row) return;
+
+    const sd = document.getElementById(`sd-${id}`);
+    if (sd) { sd.textContent = LABELS[state]; sd.className = `state-display ${state}`; }
+
+    row.querySelectorAll('.cabin-btn').forEach(btn => {
+      btn.className = 'cabin-btn' + (btn.dataset.state === state ? ` active-${state}` : '');
+    });
+
+    // clearing timer
+    if (state === 'clearing') {
+      timerEndsAt[id] = Date.now() + CLEARING_MS;
+    } else {
+      delete timerEndsAt[id];
+      const ct = document.getElementById(`ct-${id}`);
+      if (ct) ct.textContent = '';
+    }
+  }
+
+  function updateStats() {
+    const free  = cabins.filter(c => c.state === 'empty').length;
+    const occ   = cabins.filter(c => c.state === 'full').length;
+    const clr   = cabins.filter(c => c.state === 'clearing').length;
+    document.getElementById('stat-free').textContent  = free;
+    document.getElementById('stat-occ').textContent   = occ;
+    document.getElementById('stat-clr').textContent   = clr;
+    document.getElementById('stat-total').textContent = cabins.length;
+  }
+
+  function highlightSelected() {
+    document.querySelectorAll('.cabin-row').forEach(r => r.style.outline = '');
+    if (selectedCabin) {
+      const row = document.getElementById(`row-${selectedCabin}`);
+      if (row) row.style.outline = '1px solid #444';
+    }
+  }
+
+  // ─── CLEARING COUNTDOWN ───────────────────────────────────────────────────────
+  setInterval(() => {
+    const now = Date.now();
+    Object.keys(timerEndsAt).forEach(id => {
+      const remaining = Math.max(0, timerEndsAt[id] - now);
+      const el = document.getElementById(`ct-${id}`);
+      if (el) el.textContent = remaining > 0 ? `${Math.ceil(remaining / 1000)}s` : '';
+    });
+  }, 500);
+
+  // ─── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (!selectedCabin) return;
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'e' || e.key === 'E') sendUpdate(selectedCabin, 'empty');
+    if (e.key === 'f' || e.key === 'F') sendUpdate(selectedCabin, 'full');
+    if (e.key === 'c' || e.key === 'C') sendUpdate(selectedCabin, 'clearing');
+  });
+
+  // ─── BOOT ─────────────────────────────────────────────────────────────────────
+  loadStores();
+  connect();
+</script>
+</body>
+</html>

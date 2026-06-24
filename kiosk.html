@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitting Rooms</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Georgia, serif;
+      background: #e8eef5;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    .screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 90vh;
+      max-height: 700px;
+      padding: 2rem 1.5rem 1.5rem;
+    }
+
+    .top { text-align: center; }
+
+    .label {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #666;
+      font-family: sans-serif;
+      font-weight: 400;
+    }
+
+    .count {
+      font-size: 72px;
+      font-weight: 200;
+      color: #1a1a1a;
+      line-height: 1;
+      margin: 4px 0;
+      transition: color 0.4s;
+    }
+
+    .count.zero { color: #c0392b; }
+
+    .floorplan svg { display: block; }
+
+    .store-name {
+      font-size: 20px;
+      letter-spacing: 0.35em;
+      color: #1a1a1a;
+      font-family: Georgia, serif;
+      font-weight: 400;
+      text-transform: uppercase;
+      text-align: center;
+      min-height: 28px;
+    }
+
+    /* Connection dot — sağ alt */
+    .conn-dot {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #ccc;
+      transition: background 0.3s;
+    }
+    .conn-dot.connected   { background: #1a1a1a; }
+    .conn-dot.reconnecting { background: #e0a030; animation: blink 1s infinite; }
+
+    /* Fullscreen hint */
+    .fullscreen-hint {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #bbb;
+      cursor: pointer;
+      font-family: sans-serif;
+      border: 0.5px solid #ccc;
+      padding: 5px 10px;
+    }
+
+    /* Reconnect overlay */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(232, 238, 245, 0.85);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 10;
+    }
+    .overlay.visible { display: flex; }
+    .overlay p {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #888;
+      font-family: sans-serif;
+    }
+    .overlay .spinner {
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid #ccc;
+      border-top-color: #666;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+    @keyframes spin  { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="screen">
+  <div class="top">
+    <p class="label">Available</p>
+    <p class="count" id="count">—</p>
+    <p class="label">Free Rooms</p>
+  </div>
+
+  <div class="floorplan">
+    <svg id="fp" viewBox="0 0 200 320" width="200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Left column wall -->
+      <rect x="20" y="8"   width="68" height="268" rx="2" fill="#c8d4e0" stroke="#a8b8c8" stroke-width="1"/>
+      <!-- Right column wall -->
+      <rect x="106" y="88" width="68" height="188" rx="2" fill="#c8d4e0" stroke="#a8b8c8" stroke-width="1"/>
+      <!-- Connector -->
+      <rect x="20" y="262" width="154" height="14" rx="1" fill="#b8c8d8" stroke="#a8b8c8" stroke-width="0.5"/>
+
+      <!-- LEFT COLUMN: Cabins 01–08 -->
+      <g id="c1">
+        <rect id="r1" x="23" y="11"  width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="29"  text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">01</text>
+        <text id="t1" x="54" y="35"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c2">
+        <rect id="r2" x="23" y="42"  width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="60"  text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">02</text>
+        <text id="t2" x="54" y="66"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c3">
+        <rect id="r3" x="23" y="73"  width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="91"  text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">03</text>
+        <text id="t3" x="54" y="97"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c4">
+        <rect id="r4" x="23" y="104" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="122" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">04</text>
+        <text id="t4" x="54" y="128" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c5">
+        <rect id="r5" x="23" y="135" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="153" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">05</text>
+        <text id="t5" x="54" y="159" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c6">
+        <rect id="r6" x="23" y="166" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="184" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">06</text>
+        <text id="t6" x="54" y="190" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c7">
+        <rect id="r7" x="23" y="197" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="215" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">07</text>
+        <text id="t7" x="54" y="221" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c8">
+        <rect id="r8" x="23" y="228" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="54" y="246" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">08</text>
+        <text id="t8" x="54" y="252" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+
+      <!-- RIGHT COLUMN: Cabins 09–13 -->
+      <g id="c9">
+        <rect id="r9"  x="109" y="91"  width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="140" y="109" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">09</text>
+        <text id="t9"  x="140" y="115" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c10">
+        <rect id="r10" x="109" y="122" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="140" y="140" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">10</text>
+        <text id="t10" x="140" y="146" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c11">
+        <rect id="r11" x="109" y="153" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="140" y="171" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">11</text>
+        <text id="t11" x="140" y="177" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c12">
+        <rect id="r12" x="109" y="184" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="140" y="202" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">12</text>
+        <text id="t12" x="140" y="208" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+      <g id="c13">
+        <rect id="r13" x="109" y="215" width="62" height="28" rx="1" fill="#5cb85c" stroke="#4a9e4a" stroke-width="0.5"/>
+        <text x="140" y="233" text-anchor="middle" font-size="7" fill="white" font-family="sans-serif" letter-spacing="0.1em">13</text>
+        <text id="t13" x="140" y="239" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="sans-serif"></text>
+      </g>
+
+      <text x="100" y="295" text-anchor="middle" font-size="6" fill="#99a8b8" font-family="sans-serif" letter-spacing="0.2em">FLOOR PLAN</text>
+    </svg>
+  </div>
+
+  <p class="store-name" id="store-name">—</p>
+</div>
+
+<!-- Reconnect overlay -->
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <p>Reconnecting…</p>
+</div>
+
+<div class="conn-dot" id="conn-dot"></div>
+<div class="fullscreen-hint" onclick="goFullscreen()">Fullscreen · F</div>
+
+<script>
+  // ─── CONFIG ──────────────────────────────────────────────────────────────────
+  // URL param ile override edilebilir: kiosk.html?store=store-002
+  const params     = new URLSearchParams(window.location.search);
+  const STORE_ID   = params.get('store') || 'store-001';
+  const WS_URL     = `ws://localhost:3000?store=${STORE_ID}`;
+
+  const CLEARING_DURATION_MS = 30 * 1000;
+
+  const FILLS   = { empty: '#5cb85c', full: '#4a6080', clearing: '#a0a878' };
+  const STROKES = { empty: '#4a9e4a', full: '#3a5070', clearing: '#888870' };
+
+  // ─── STATE ───────────────────────────────────────────────────────────────────
+  let cabins       = [];
+  let ws           = null;
+  let retryTimeout = null;
+  let retryDelay   = 1000;       // ilk retry 1s, her seferinde 2x artar, max 16s
+  const timerEndsAt = {};
+
+  // ─── UI ──────────────────────────────────────────────────────────────────────
+  const dot       = document.getElementById('conn-dot');
+  const overlay   = document.getElementById('overlay');
+  const countEl   = document.getElementById('count');
+  const storeEl   = document.getElementById('store-name');
+
+  function goFullscreen() {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'f' || e.key === 'F') goFullscreen();
+  });
+
+  function setConnected(state) {
+    // state: 'connected' | 'reconnecting' | 'disconnected'
+    dot.className = 'conn-dot' + (state === 'connected' ? ' connected' : state === 'reconnecting' ? ' reconnecting' : '');
+    overlay.classList.toggle('visible', state !== 'connected');
+  }
+
+  function updateCount() {
+    const free = cabins.filter(c => c.state === 'empty').length;
+    countEl.textContent = free;
+    countEl.classList.toggle('zero', free === 0);
+  }
+
+  function applyState(id, state) {
+    const rect  = document.getElementById(`r${id}`);
+    const timer = document.getElementById(`t${id}`);
+    if (!rect) return;
+
+    rect.setAttribute('fill',   FILLS[state]);
+    rect.setAttribute('stroke', STROKES[state]);
+
+    if (state === 'clearing') {
+      rect.style.animation = 'blink 1.5s ease-in-out infinite';
+      timerEndsAt[id] = Date.now() + CLEARING_DURATION_MS;
+    } else {
+      rect.style.animation = '';
+      delete timerEndsAt[id];
+      if (timer) timer.textContent = '';
+    }
+    updateCount();
+  }
+
+  function renderAll() {
+    cabins.forEach(c => applyState(c.id, c.state));
+  }
+
+  // Countdown timer (clearing state)
+  setInterval(() => {
+    const now = Date.now();
+    Object.keys(timerEndsAt).forEach(id => {
+      const remaining = Math.max(0, timerEndsAt[id] - now);
+      const el = document.getElementById(`t${id}`);
+      if (el) el.textContent = remaining > 0 ? `${Math.ceil(remaining / 1000)}s` : '';
+    });
+  }, 500);
+
+  // ─── WEBSOCKET w/ RECONNECT ───────────────────────────────────────────────────
+  function connect() {
+    if (ws) { ws.onclose = null; ws.close(); }
+
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = () => {
+      retryDelay = 1000; // başarılı bağlantıda sıfırla
+      setConnected('connected');
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'init') {
+          cabins = data.cabins;
+          if (data.storeName) storeEl.textContent = data.storeName;
+          renderAll();
+        }
+
+        if (data.type === 'update') {
+          const cabin = cabins.find(c => c.id === data.id);
+          if (cabin) cabin.state = data.state;
+          applyState(data.id, data.state);
+        }
+      } catch (err) {
+        console.error('Parse error:', err);
+      }
+    };
+
+    ws.onclose = () => {
+      setConnected('reconnecting');
+      scheduleRetry();
+    };
+
+    ws.onerror = () => {
+      ws.close(); // onclose tetiklenecek, retry oradan
+    };
+  }
+
+  function scheduleRetry() {
+    clearTimeout(retryTimeout);
+    retryTimeout = setTimeout(() => {
+      connect();
+      retryDelay = Math.min(retryDelay * 2, 16000); // exponential backoff, max 16s
+    }, retryDelay);
+  }
+
+  // ─── BOOT ─────────────────────────────────────────────────────────────────────
+  connect();
+</script>
+</body>
+</html>
