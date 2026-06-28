@@ -1,4 +1,4 @@
-# Cabin Tracker 🚪
+# Cabin Tracker 
 
 Real-time fitting room occupancy monitoring system built for retail chains. A WebSocket server broadcasts live cabin states to a customer-facing kiosk and a manager dashboard — no page refresh needed.
 
