@@ -236,7 +236,7 @@
   // URL param ile override edilebilir: kiosk.html?store=store-002
   const params     = new URLSearchParams(window.location.search);
   const STORE_ID   = params.get('store') || 'store-001';
-  const WS_URL     = `ws://localhost:3000?store=${STORE_ID}`;
+  const WS_URL     = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
 
   const CLEARING_DURATION_MS = 30 * 1000;
 

@@ -1,0 +1,12 @@
+{
+  "port": 3000,
+  "clearingToEmptyMs": 30000,
+  "maxEvents": 5000,
+  "dataFile": "data/state.json",
+  "stores": {
+    "store-001": {
+      "name": "DeFacto Bağcılar AVM",
+      "cabinCount": 13
+    }
+  }
+}

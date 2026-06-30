@@ -1,0 +1,18 @@
+{
+  "name": "cabin-tracker",
+  "version": "1.0.0",
+  "description": "Real-time fitting room availability tracker with WebSocket updates, analytics, and static kiosk/simulator/dashboard pages.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

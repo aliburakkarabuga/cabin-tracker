@@ -1,74 +1,117 @@
 # Cabin Tracker 🚪
 
-Real-time fitting room availability tracker built for Zara-style retail environments. A WebSocket server broadcasts live cabin states to a kiosk screen — no page refresh needed.
+Real-time fitting room availability tracker built for Zara-style retail environments. A WebSocket server broadcasts live cabin states to a kiosk screen with no page refresh needed.
 
-## Demo
-
-| Kiosk Screen | Simulator Panel |
-|---|---|
-| Zara-style floor plan with live colors | Staff control panel to change cabin states |
-
-## How It Works
+## What It Does
 
 ```
 Reed Switch (door) → Raspberry Pi → WebSocket Server → Kiosk Screen
 ```
 
 - Door closes → magnetic reed switch triggers → server updates state → kiosk updates instantly
-- **Preparing** state auto-resets to **Available** after 30 seconds
-- Currently simulated via software — hardware integration coming soon
+- **Preparing / clearing** state auto-resets to **Available / empty** after 30 seconds
+- Includes a simulator panel until hardware sensors are connected
+- Includes a dashboard with live store analytics
+- Persists cabin state and recent events to `data/state.json`
+
+## Pages
+
+After starting the server, open:
+
+- `http://localhost:3000/kiosk` - customer-facing cabin availability display
+- `http://localhost:3000/simulator` - staff control panel that simulates sensors
+- `http://localhost:3000/dashboard` - analytics/admin dashboard
 
 ## States
 
-| State | Color | Meaning |
-|---|---|---|
-| Available | 🟢 Green | Cabin is free |
-| Occupied | ⚫ Dark | Customer inside |
-| Preparing | 🔵 Pulsing | Being cleaned — resets in 30s |
+| Server State | Display Meaning |
+|---|---|
+| `empty` | Cabin is free |
+| `full` | Customer inside |
+| `clearing` | Being cleaned, then auto-resets to empty |
 
 ## Project Structure
 
 ```
 cabin-tracker/
-├── server.js        # Node.js WebSocket server
-├── kiosk.html       # Customer-facing floor plan display
-└── simulator.html   # Staff control panel (replaces hardware sensors)
+├── config.json          # Stores, cabin counts, timers, persistence path
+├── data/                # Runtime state, created automatically
+├── dashboard.html       # Analytics dashboard
+├── kiosk.html           # Customer-facing floor plan display
+├── package.json         # npm scripts and dependencies
+├── server.js            # HTTP, REST API, WebSocket, persistence
+├── simulator.html       # Staff control panel / hardware simulator
+└── test/server.test.js  # State machine and config tests
 ```
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js v18+
 
-### Installation
+### Install
 
 ```bash
-git clone https://github.com/aliburakkarabuga/cabin-tracker
-cd cabin-tracker
-npm install ws
+npm install
 ```
 
 ### Run
 
 ```bash
-node server.js
+npm start
 ```
 
-Then open `kiosk.html` and `simulator.html` in your browser.
+### Test
+
+```bash
+npm test
+```
+
+## Configuration
+
+Edit `config.json` to change stores, cabin counts, port, timer duration, or persistence path.
+
+```json
+{
+  "port": 3000,
+  "clearingToEmptyMs": 30000,
+  "maxEvents": 5000,
+  "dataFile": "data/state.json",
+  "stores": {
+    "store-001": {
+      "name": "DeFacto Bağcılar AVM",
+      "cabinCount": 13
+    }
+  }
+}
+```
+
+Environment overrides:
+
+- `PORT=4000 npm start`
+- `CLEARING_TO_EMPTY_MS=10000 npm start`
+
+## API
+
+- `GET /api/health`
+- `GET /api/stores`
+- `GET /api/analytics/:storeId?hours=8`
+- `GET /api/events/:storeId`
 
 ## Roadmap
 
 - [ ] Raspberry Pi integration with real reed switches
-- [ ] Floor plan from actual store layout
 - [ ] Staff authentication for simulator panel
-- [ ] Deploy server online (not just localhost)
+- [ ] Deploy server online
 - [ ] Buzzer alert when cabin occupied too long
+- [ ] Export analytics CSV
 
 ## Tech Stack
 
-- **Backend** — Node.js, WebSocket (ws)
-- **Frontend** — Vanilla HTML/CSS/JavaScript
-- **Hardware (planned)** — Raspberry Pi Zero 2W, reed switches
+- **Backend**: Node.js, WebSocket (`ws`)
+- **Frontend**: Vanilla HTML, CSS, JavaScript
+- **Hardware planned**: Raspberry Pi Zero 2W, reed switches
 
 ## Author
 

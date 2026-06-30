@@ -364,8 +364,8 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
-  const API       = 'http://localhost:3000';
-  const WS_BASE   = 'ws://localhost:3000';
+  const API       = window.location.origin;
+  const WS_BASE   = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
   const REFRESH_S = 30; // analytics kaç saniyede bir yenilenir
 
   const urlParams   = new URLSearchParams(window.location.search);

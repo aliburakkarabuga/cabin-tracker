@@ -257,7 +257,7 @@
   // ─── FETCH STORES ─────────────────────────────────────────────────────────────
   async function loadStores() {
     try {
-      const res = await fetch('http://localhost:3000/api/stores');
+      const res = await fetch('/api/stores');
       stores = await res.json();
       renderStoreBar();
     } catch {
@@ -293,7 +293,7 @@
     const dot   = document.getElementById('conn-dot');
     const label = document.getElementById('conn-label');
 
-    ws = new WebSocket(`ws://localhost:3000?store=${currentStore}`);
+    ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${currentStore}`);
 
     ws.onopen = () => {
       retryDelay = 1000;
