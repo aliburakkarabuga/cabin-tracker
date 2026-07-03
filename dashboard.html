@@ -364,8 +364,8 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
-  const API       = window.location.origin;
-  const WS_BASE   = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
+  const API       = 'http://localhost:3000';
+  const WS_BASE   = 'ws://localhost:3000';
   const REFRESH_S = 30; // analytics kaç saniyede bir yenilenir
 
   const urlParams   = new URLSearchParams(window.location.search);
@@ -543,18 +543,47 @@
         </div>
         <div class="stat-card">
           <span class="stat-card-label">Occupied now</span>
-          <span class="stat-card-value ${occ > 0 ? '' : ''}">${occ}</span>
+          <span class="stat-card-value">${occ}</span>
           <span class="stat-card-sub">${clr > 0 ? `+ ${clr} clearing` : 'no clearing'}</span>
         </div>
         <div class="stat-card">
           <span class="stat-card-label">Visits (${rangeHours}h)</span>
           <span class="stat-card-value">${d.totalVisits || 0}</span>
-          <span class="stat-card-sub">total entries</span>
+          <span class="stat-card-sub">${peakHour !== null ? `peak at ${peakHour}:00` : 'no peak data'}</span>
         </div>
         <div class="stat-card">
           <span class="stat-card-label">Avg dwell time</span>
           <span class="stat-card-value ${avgDwell >= 20 ? 'amber' : ''}">${avgDwell !== null ? avgDwell + 's' : '—'}</span>
-          <span class="stat-card-sub">${peakHour !== null ? `peak at ${peakHour}:00` : 'no peak data'}</span>
+          <span class="stat-card-sub">time spent per cabin</span>
+        </div>
+      </div>
+
+      <!-- Cleaning stats -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <span class="stat-card-label">Avg cleaning time</span>
+          <span class="stat-card-value ${d.overallAvgClearingS > 25 ? 'amber' : 'green'}">${d.overallAvgClearingS !== null ? d.overallAvgClearingS + 's' : '—'}</span>
+          <span class="stat-card-sub">across all cabins</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Slowest cabin</span>
+          <span class="stat-card-value ${d.slowestCabinTimeS > 25 ? 'amber' : ''}">${d.slowestCabin !== null ? String(d.slowestCabin).padStart(2,'0') : '—'}</span>
+          <span class="stat-card-sub">${d.slowestCabinTimeS ? `avg ${d.slowestCabinTimeS}s to clear` : 'no data yet'}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Total cleanings</span>
+          <span class="stat-card-value">${Object.values(d.clearingCountByCabin || {}).reduce((a,b) => a+b, 0)}</span>
+          <span class="stat-card-sub">in last ${rangeHours}h</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-label">Efficiency</span>
+          <span class="stat-card-value ${d.overallAvgClearingS !== null && d.overallAvgClearingS <= 20 ? 'green' : d.overallAvgClearingS > 25 ? 'amber' : ''}">${
+            d.overallAvgClearingS === null ? '—'
+            : d.overallAvgClearingS <= 20 ? 'Good'
+            : d.overallAvgClearingS <= 25 ? 'OK'
+            : 'Slow'
+          }</span>
+          <span class="stat-card-sub">${d.overallAvgClearingS !== null ? `target ≤ 20s` : 'not enough data'}</span>
         </div>
       </div>
 
@@ -585,6 +614,18 @@
         </div>
       </div>
 
+      <!-- Cleaning time chart -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Avg cleaning time per cabin (seconds) — target ≤ 20s</div>
+          <canvas id="cleaning-chart" height="160"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Cleaning count per cabin</div>
+          <canvas id="cleaning-count-chart" height="160"></canvas>
+        </div>
+      </div>
+
       <!-- Cabin table -->
       <div class="table-card">
         <div class="table-title">Cabin detail</div>
@@ -595,6 +636,8 @@
               <th>State</th>
               <th>Visits</th>
               <th>Avg dwell</th>
+              <th>Avg clean</th>
+              <th>Cleanings</th>
               <th>In use since</th>
             </tr>
           </thead>
@@ -605,6 +648,8 @@
 
     drawHourlyChart(hourly);
     drawUsageChart(d.usageCountByCabin || {}, total);
+    drawCleaningChart(d.avgClearingByCabin || {}, total);
+    drawCleaningCountChart(d.clearingCountByCabin || {}, total);
     renderCabinTable(d);
   }
 
@@ -642,10 +687,16 @@
     if (!tbody) return;
     tbody.innerHTML = '';
     cabins.forEach(c => {
-      const visits    = d.usageCountByCabin?.[c.id] || 0;
-      const avgDwell  = d.avgDwellByCabin?.[c.id] ? `${d.avgDwellByCabin[c.id]}s` : '—';
-      const sinceMs   = c.state === 'full' && dwellStart[c.id] ? Date.now() - dwellStart[c.id] : null;
-      const sinceStr  = sinceMs ? `${Math.floor(sinceMs / 60000)}m ${Math.floor((sinceMs % 60000) / 1000)}s` : '—';
+      const visits      = d.usageCountByCabin?.[c.id] || 0;
+      const avgDwell    = d.avgDwellByCabin?.[c.id] ? `${d.avgDwellByCabin[c.id]}s` : '—';
+      const avgClean    = d.avgClearingByCabin?.[c.id] ? `${d.avgClearingByCabin[c.id]}s` : '—';
+      const cleanCount  = d.clearingCountByCabin?.[c.id] || 0;
+      const sinceMs     = c.state === 'full' && dwellStart[c.id] ? Date.now() - dwellStart[c.id] : null;
+      const sinceStr    = sinceMs ? `${Math.floor(sinceMs / 60000)}m ${Math.floor((sinceMs % 60000) / 1000)}s` : '—';
+
+      // temizlik süresi renge göre sınıflandır
+      const cleanVal    = d.avgClearingByCabin?.[c.id] || null;
+      const cleanColor  = cleanVal === null ? '' : cleanVal <= 20 ? 'color:var(--green)' : cleanVal > 25 ? 'color:var(--amber)' : '';
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -653,6 +704,8 @@
         <td><span class="state-pill ${c.state}">${c.state}</span></td>
         <td>${visits}</td>
         <td>${avgDwell}</td>
+        <td style="${cleanColor}">${avgClean}</td>
+        <td>${cleanCount}</td>
         <td>${sinceStr}</td>
       `;
       tbody.appendChild(tr);
@@ -742,6 +795,113 @@
     });
 
     // cabin number labels (her 2'de bir)
+    ctx.fillStyle = '#444';
+    ctx.font = '8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ids.forEach((id, i) => {
+      if (i % 2 === 0) {
+        const x = pad.left + (i / ids.length) * w + w / ids.length / 2;
+        ctx.fillText(String(id).padStart(2,'0'), x, canvas.height - 6);
+      }
+    });
+  }
+
+  function drawCleaningChart(cleaningData, totalCabins) {
+    const canvas = document.getElementById('cleaning-chart');
+    if (!canvas) return;
+    canvas.width  = canvas.offsetWidth || 600;
+    canvas.height = 160;
+
+    const ctx    = canvas.getContext('2d');
+    const ids    = Array.from({ length: totalCabins }, (_, i) => i + 1);
+    const values = ids.map(id => cleaningData[id] || 0);
+    const max    = Math.max(...values, 30); // min max 30s göster
+
+    const pad  = { top: 16, right: 16, bottom: 28, left: 36 };
+    const w    = canvas.width  - pad.left - pad.right;
+    const h    = canvas.height - pad.top  - pad.bottom;
+    const barW = Math.max(2, w / ids.length - 4);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // hedef çizgisi (20s)
+    const targetY = pad.top + h * (1 - 20 / max);
+    ctx.strokeStyle = 'rgba(76,175,110,0.3)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(pad.left, targetY); ctx.lineTo(pad.left + w, targetY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(76,175,110,0.4)';
+    ctx.font = '8px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('target 20s', pad.left + 4, targetY - 3);
+
+    // gridlines
+    ctx.strokeStyle = '#1e1e1e';
+    ctx.lineWidth = 1;
+    [0, 0.5, 1].forEach(ratio => {
+      const y = pad.top + h * (1 - ratio);
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + w, y); ctx.stroke();
+    });
+
+    // bars
+    values.forEach((val, i) => {
+      if (val === 0) return;
+      const x     = pad.left + (i / ids.length) * w + (w / ids.length - barW) / 2;
+      const barH  = (val / max) * h;
+      const y     = pad.top + h - barH;
+      // renk: iyi=yeşil, orta=sarı, yavaş=turuncu
+      const color = val <= 20 ? 'rgba(76,175,110,0.8)' : val <= 25 ? 'rgba(200,200,60,0.8)' : 'rgba(200,146,42,0.9)';
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, barW, barH);
+    });
+
+    // x labels
+    ctx.fillStyle = '#444';
+    ctx.font = '8px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ids.forEach((id, i) => {
+      if (i % 2 === 0) {
+        const x = pad.left + (i / ids.length) * w + w / ids.length / 2;
+        ctx.fillText(String(id).padStart(2,'0'), x, canvas.height - 6);
+      }
+    });
+
+    // y labels
+    ctx.fillStyle = '#333';
+    ctx.textAlign = 'right';
+    ctx.fillText('0', pad.left - 4, pad.top + h + 4);
+    ctx.fillText(max + 's', pad.left - 4, pad.top + 10);
+  }
+
+  function drawCleaningCountChart(countData, totalCabins) {
+    const canvas = document.getElementById('cleaning-count-chart');
+    if (!canvas) return;
+    canvas.width  = canvas.offsetWidth || 260;
+    canvas.height = 160;
+
+    const ctx    = canvas.getContext('2d');
+    const ids    = Array.from({ length: totalCabins }, (_, i) => i + 1);
+    const values = ids.map(id => countData[id] || 0);
+    const max    = Math.max(...values, 1);
+
+    const pad  = { top: 16, right: 16, bottom: 28, left: 28 };
+    const w    = canvas.width  - pad.left - pad.right;
+    const h    = canvas.height - pad.top  - pad.bottom;
+    const barW = Math.max(2, w / ids.length - 3);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    values.forEach((val, i) => {
+      if (val === 0) return;
+      const x     = pad.left + (i / ids.length) * w + (w / ids.length - barW) / 2;
+      const barH  = (val / max) * h;
+      const y     = pad.top + h - barH;
+      const alpha = 0.3 + 0.7 * (val / max);
+      ctx.fillStyle = `rgba(160,168,120,${alpha})`;
+      ctx.fillRect(x, y, barW, barH);
+    });
+
     ctx.fillStyle = '#444';
     ctx.font = '8px Inter, sans-serif';
     ctx.textAlign = 'center';
