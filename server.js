@@ -1,26 +1,28 @@
 const http = require('http');
 const WebSocket = require('ws');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
 
-// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const STATIC_FILES = {
+  '/kiosk.html': 'kiosk.html',
+  '/simulator.html': 'simulator.html',
+};
+
 const PORT = 3000;
 const CLEARING_TO_EMPTY_MS = 30 * 1000;
 const CABIN_COUNT = 13;
-const MAX_EVENTS = 5000; // kaç event tutacağız bellekte
-
-// ─── STORE TANIMI ─────────────────────────────────────────────────────────────
+const MAX_EVENTS = 5000;
 
 const STORES = {
   'store-001': { name: 'DeFacto Bağcılar AVM', cabinCount: 13 },
-
 };
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
-const stores = {};          
-const timers = {};           
-const dwellStart = {};       
-const clearingStart = {};    
-const analyticsLog = [];     
+const stores = {};
+const timers = {};
+const dwellStart = {};
+const clearingStart = {};
+const analyticsLog = [];
 
 function initStore(storeId) {
   const store = STORES[storeId];
@@ -36,12 +38,10 @@ function initStore(storeId) {
 
 Object.keys(STORES).forEach(initStore);
 
-// ─── ANALYTICS ────────────────────────────────────────────────────────────────
 function logEvent(storeId, cabinId, fromState, toState) {
   const now = Date.now();
   const key = `${storeId}-${cabinId}`;
 
-  // dwell time: kabin "full" iken ne kadar kaldı
   let dwellMs = null;
   if (fromState === 'full' && dwellStart[key]) {
     dwellMs = now - dwellStart[key];
@@ -51,7 +51,6 @@ function logEvent(storeId, cabinId, fromState, toState) {
     dwellStart[key] = now;
   }
 
-  // clearing time: kabin "clearing" iken ne kadar kaldı (temizlik süresi)
   let clearingMs = null;
   if (fromState === 'clearing' && clearingStart[key]) {
     clearingMs = now - clearingStart[key];
@@ -61,31 +60,19 @@ function logEvent(storeId, cabinId, fromState, toState) {
     clearingStart[key] = now;
   }
 
-  const event = {
-    ts: now,
-    storeId,
-    cabinId,
-    fromState,
-    toState,
-    dwellMs,
-    clearingMs,
-  };
-
+  const event = { ts: now, storeId, cabinId, fromState, toState, dwellMs, clearingMs };
   analyticsLog.push(event);
-  if (analyticsLog.length > MAX_EVENTS) analyticsLog.shift(); // bellek taşmasın
-
+  if (analyticsLog.length > MAX_EVENTS) analyticsLog.shift();
   return event;
 }
 
-// Belirli bir store için özet istatistik üret
 function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
   const since = Date.now() - sinceMs;
   const events = analyticsLog.filter(e => e.storeId === storeId && e.ts >= since);
 
-  // Kabin bazında dwell time ve clearing time ortalaması
-  const dwellByCabin    = {};
+  const dwellByCabin = {};
   const clearingByCabin = {};
-  const usageByCabin    = {};
+  const usageByCabin = {};
 
   events.forEach(e => {
     if (e.dwellMs !== null) {
@@ -107,7 +94,6 @@ function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
     avgDwell[id] = Math.round(arr.reduce((a, b) => a + b, 0) / arr.length / 1000);
   });
 
-  // Temizlik süresi — kabin bazında ortalama (saniye), toplam clearing sayısı
   const avgClearing = {};
   const clearingCountByCabin = {};
   Object.keys(clearingByCabin).forEach(id => {
@@ -116,30 +102,26 @@ function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
     clearingCountByCabin[id] = arr.length;
   });
 
-  // Tüm kabinler ortalaması
   const allClearingVals = Object.values(clearingByCabin).flat();
   const overallAvgClearing = allClearingVals.length
     ? Math.round(allClearingVals.reduce((a, b) => a + b, 0) / allClearingVals.length / 1000)
     : null;
 
-  // En yavaş temizlenen kabin
   let slowestCabin = null;
-  let slowestTime  = 0;
+  let slowestTime = 0;
   Object.keys(avgClearing).forEach(id => {
     if (avgClearing[id] > slowestTime) {
-      slowestTime  = avgClearing[id];
+      slowestTime = avgClearing[id];
       slowestCabin = Number(id);
     }
   });
 
-  // Saatlik doluluk (son 8 saat, her saat için kaç kez full oldu)
   const hourlyBuckets = {};
   events.filter(e => e.toState === 'full').forEach(e => {
     const hour = new Date(e.ts).getHours();
     hourlyBuckets[hour] = (hourlyBuckets[hour] || 0) + 1;
   });
 
-  // Şu anki doluluk
   const store = stores[storeId];
   const occupied = store ? store.cabins.filter(c => c.state === 'full').length : 0;
   const total = store ? store.cabins.length : 0;
@@ -155,7 +137,6 @@ function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
     avgDwellByCabin: avgDwell,
     usageCountByCabin: usageByCabin,
     hourlyTraffic: hourlyBuckets,
-    // temizlik süresi analizi
     avgClearingByCabin: avgClearing,
     clearingCountByCabin: clearingCountByCabin,
     overallAvgClearingS: overallAvgClearing,
@@ -164,7 +145,6 @@ function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
   };
 }
 
-// ─── BROADCAST ────────────────────────────────────────────────────────────────
 function broadcast(storeId, data) {
   const message = JSON.stringify(data);
   wss.clients.forEach(client => {
@@ -174,7 +154,6 @@ function broadcast(storeId, data) {
   });
 }
 
-// ─── STATE MACHINE ────────────────────────────────────────────────────────────
 function setCabinState(storeId, cabinId, newState) {
   const store = stores[storeId];
   if (!store) return console.warn(`Unknown store: ${storeId}`);
@@ -183,7 +162,7 @@ function setCabinState(storeId, cabinId, newState) {
   if (!cabin) return console.warn(`Unknown cabin: ${cabinId} in ${storeId}`);
 
   const oldState = cabin.state;
-  if (oldState === newState) return; // değişim yok, gereksiz broadcast yapma
+  if (oldState === newState) return;
 
   cabin.state = newState;
   console.log(`[${storeId}] Cabin ${cabinId}: ${oldState} → ${newState}`);
@@ -191,7 +170,6 @@ function setCabinState(storeId, cabinId, newState) {
   logEvent(storeId, cabinId, oldState, newState);
   broadcast(storeId, { type: 'update', id: cabinId, state: newState });
 
-  // clearing timer yönetimi
   const key = `${storeId}-${cabinId}`;
   if (timers[key]) {
     clearTimeout(timers[key]);
@@ -206,17 +184,26 @@ function setCabinState(storeId, cabinId, newState) {
   }
 }
 
-// ─── HTTP SERVER (REST API) ───────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
   const parsed = url.parse(req.url, true);
-  const path = parsed.pathname;
+  const reqPath = parsed.pathname;
 
-  // CORS — dashboard başka portta açılabilir
+  if (req.method === 'GET' && STATIC_FILES[reqPath]) {
+    const filePath = path.join(__dirname, STATIC_FILES[reqPath]);
+    return fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        return res.end('File not found');
+      }
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(data);
+    });
+  }
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
-  // GET /api/stores — tüm store listesi
-  if (req.method === 'GET' && path === '/api/stores') {
+  if (req.method === 'GET' && reqPath === '/api/stores') {
     return res.end(JSON.stringify(Object.keys(STORES).map(id => ({
       id,
       ...STORES[id],
@@ -224,8 +211,7 @@ const server = http.createServer((req, res) => {
     }))));
   }
 
-  
-  const analyticsMatch = path.match(/^\/api\/analytics\/(.+)$/);
+  const analyticsMatch = reqPath.match(/^\/api\/analytics\/(.+)$/);
   if (req.method === 'GET' && analyticsMatch) {
     const storeId = analyticsMatch[1];
     if (!STORES[storeId]) {
@@ -236,28 +222,22 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify(getStoreSummary(storeId, hours * 3600000)));
   }
 
-  // GET /api/events/:storeId — ham event log (son 200)
-  const eventsMatch = path.match(/^\/api\/events\/(.+)$/);
+  const eventsMatch = reqPath.match(/^\/api\/events\/(.+)$/);
   if (req.method === 'GET' && eventsMatch) {
     const storeId = eventsMatch[1];
-    const storeEvents = analyticsLog
-      .filter(e => e.storeId === storeId)
-      .slice(-200);
+    const storeEvents = analyticsLog.filter(e => e.storeId === storeId).slice(-200);
     return res.end(JSON.stringify(storeEvents));
   }
 
- 
   res.writeHead(200);
   res.end(JSON.stringify({ status: 'Cabin Tracker Server running', stores: Object.keys(STORES) }));
 });
 
-// ─── WEBSOCKET SERVER ─────────────────────────────────────────────────────────
 const wss = new WebSocket.Server({ server });
 
 wss.on('connection', (ws, req) => {
-  
   const params = url.parse(req.url, true).query;
-  const storeId = params.store || 'store-001'; // default store
+  const storeId = params.store || 'store-001';
 
   if (!stores[storeId]) {
     console.warn(`Connection attempt for unknown store: ${storeId}`);
@@ -268,7 +248,6 @@ wss.on('connection', (ws, req) => {
   ws.storeId = storeId;
   console.log(`[${storeId}] Client connected`);
 
-  
   ws.send(JSON.stringify({
     type: 'init',
     storeId,
@@ -276,7 +255,6 @@ wss.on('connection', (ws, req) => {
     cabins: stores[storeId].cabins,
   }));
 
-  
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
 
@@ -295,7 +273,6 @@ wss.on('connection', (ws, req) => {
   ws.on('error', (err) => console.error(`[${storeId}] WS error:`, err.message));
 });
 
-// Ölü bağlantıları 30 saniyede bir temizle
 const pingInterval = setInterval(() => {
   wss.clients.forEach(ws => {
     if (!ws.isAlive) return ws.terminate();
@@ -306,7 +283,6 @@ const pingInterval = setInterval(() => {
 
 wss.on('close', () => clearInterval(pingInterval));
 
-// ─── START ────────────────────────────────────────────────────────────────────
 server.listen(PORT, () => {
   console.log(`\nCabin Tracker Server — http://localhost:${PORT}`);
   console.log(`Stores: ${Object.keys(STORES).join(', ')}`);
