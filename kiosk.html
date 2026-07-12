@@ -11,8 +11,7 @@
 
     body {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      /* İçi karartmayan, aydınlık, temiz ve parlak kristal arka plan */
-      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f4f7fa 100%);
+      background: #fcfcfc;
       width: 100vw;
       height: 100vh;
       display: flex;
@@ -30,7 +29,7 @@
       justify-content: space-between;
       height: 92vh; 
       width: 100%;
-      max-width: 400px; /* Geniş ekranlarda da dikey kule gibi zarif durması için */
+      max-width: 400px;
       max-height: 820px;
       padding: 2.5rem 1.5rem 2rem;
       margin: auto;
@@ -42,7 +41,7 @@
       font-size: 12px;
       letter-spacing: 0.35em;
       text-transform: uppercase;
-      color: #64748b; /* Daha net, okunabilir gri */
+      color: #7f8c8d;
       font-family: 'Inter', sans-serif;
       font-weight: 600;
     }
@@ -50,7 +49,7 @@
     .count {
       font-size: 116px;
       font-weight: 300;
-      color: #0f172a;
+      color: #2c3e50;
       line-height: 1.1;
       margin: 8px 0;
       letter-spacing: -0.03em;
@@ -59,16 +58,15 @@
     }
 
     .count.pulse { transform: scale(1.08); }
-    .count.zero { color: #ef4444; font-weight: 400; }
+    .count.zero { color: #c0392b; font-weight: 400; }
 
     .rule {
       width: 60px;
       height: 1.5px;
-      background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+      background: linear-gradient(90deg, transparent, #bdc3c7, transparent);
       margin: 8px auto 0;
     }
 
-    /* İstenmeyen arkadaki tüm kutular, gölgeler ve buzlu camlar tamamen temizlendi */
     .floorplan {
       position: relative;
       padding: 1rem 0;
@@ -79,20 +77,18 @@
     }
     .floorplan svg { display: block; }
 
-    /* Canlı ve net mimari duvar çizgileri */
     .fp-wall {
-      fill: #e2e8f0;
-      stroke: #cbd5e1;
+      fill: #f5f6fa;
+      stroke: #dcdde1;
       stroke-width: 1.5;
     }
     
     .fp-floor {
-      fill: #f1f5f9;
-      stroke: #cbd5e1;
+      fill: #f5f6fa;
+      stroke: #dcdde1;
       stroke-width: 0.75;
     }
 
-    /* Modern ve prestijli marka alanı */
     .brand {
       display: flex;
       flex-direction: column;
@@ -104,7 +100,7 @@
       font-size: 10px;
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: #94a3b8;
+      color: #95a5a6;
       font-weight: 600;
     }
     .store-name {
@@ -112,7 +108,7 @@
       font-size: 32px;
       font-weight: 500;
       letter-spacing: 0.38em;
-      color: #0f172a;
+      color: #2c3e50;
       text-transform: uppercase;
       text-align: center;
       padding-left: 0.38em;
@@ -125,11 +121,11 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #cbd5e1;
+      background: #bdc3c7;
       transition: background 0.3s;
     }
-    .conn-dot.connected   { background: #10b981; }
-    .conn-dot.reconnecting { background: #f59e0b; animation: blink 1s infinite; }
+    .conn-dot.connected   { background: #27ae60; }
+    .conn-dot.reconnecting { background: #f39c12; animation: blink 1s infinite; }
 
     .fullscreen-hint {
       position: fixed;
@@ -139,17 +135,17 @@
       font-size: 9px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #94a3b8;
+      color: #95a5a6;
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       font-weight: 500;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #dcdde1;
       border-radius: 4px;
       padding: 5px 10px;
       background: rgba(255,255,255,0.7);
       transition: all 0.2s;
     }
-    .fullscreen-hint:hover { color: #475569; border-color: #cbd5e1; background: #fff; }
+    .fullscreen-hint:hover { color: #7f8c8d; border-color: #bdc3c7; background: #fff; }
 
     .overlay {
       display: none;
@@ -168,14 +164,14 @@
       font-size: 11px;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #64748b;
+      color: #7f8c8d;
       font-family: 'Inter', sans-serif;
     }
     .overlay .spinner {
       width: 24px;
       height: 24px;
-      border: 2px solid #e2e8f0;
-      border-top-color: #64748b;
+      border: 2px solid #dcdde1;
+      border-top-color: #7f8c8d;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -197,12 +193,10 @@
 
   <div class="floorplan">
     <svg id="fp" viewBox="0 0 200 320" width="200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Ana mimari duvar hatları -->
       <rect class="fp-wall" x="20" y="8"   width="68" height="268" rx="3"/>
       <rect class="fp-wall" x="106" y="88" width="68" height="188" rx="3"/>
       <rect class="fp-floor" x="20" y="262" width="154" height="14" rx="1"/>
 
-      <!-- SOL SÜTUN: Kabinler 01–08 -->
       <g id="c1">
         <rect id="r1" x="23" y="12"  width="62" height="26" rx="2" stroke-width="1"/>
         <text x="54" y="28"  text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">01</text>
@@ -244,7 +238,6 @@
         <text id="t8" x="54" y="251" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
 
-      <!-- SAĞ SÜTUN: Kabinler 09–13 -->
       <g id="c9">
         <rect id="r9"  x="109" y="92"  width="62" height="26" rx="2" stroke-width="1"/>
         <text x="140" y="108" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">09</text>
@@ -271,7 +264,7 @@
         <text id="t13" x="140" y="238" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
 
-      <text x="100" y="296" text-anchor="middle" font-size="6.5" fill="#94a3b8" font-family="Inter, sans-serif" letter-spacing="0.25em" font-weight="600">FLOOR PLAN</text>
+      <text x="100" y="296" text-anchor="middle" font-size="6.5" fill="#95a5a6" font-family="Inter, sans-serif" letter-spacing="0.25em" font-weight="600">FLOOR PLAN</text>
     </svg>
   </div>
 
@@ -290,7 +283,6 @@
 <div class="fullscreen-hint" onclick="goFullscreen()">Fullscreen · F</div>
 
 <script>
-  // ─── CONFIG ──────────────────────────────────────────────────────────────────
   const params     = new URLSearchParams(window.location.search);
   const STORE_ID   = params.get('store') || 'store-001';
   const WS_URL     = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
@@ -300,26 +292,23 @@
     if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
   }).catch(() => {});
 
-  // YENİ CANLI VE ENERJİK RENK PALETİ
   const FILLS   = { 
-    empty: '#10b981',    /* Canlı Zümrüt Yeşili (Boş/Müsait) */
-    full: '#1e3a8a',     /* Derin Safir Mavisi (Dolu) */
-    clearing: '#f59e0b'  /* Enerjik Altın Sarısı (Temizleniyor) */
+    empty: '#27ae60',
+    full: '#2c3e50',
+    clearing: '#e67e22'
   };
   const STROKES = { 
-    empty: '#059669', 
-    full: '#172554', 
-    clearing: '#d97706' 
+    empty: '#219653', 
+    full: '#1a252f', 
+    clearing: '#d35400' 
   };
 
-  // ─── STATE ───────────────────────────────────────────────────────────────────
   let cabins       = [];
   let ws           = null;
   let retryTimeout = null;
   let retryDelay   = 1000;
   const timerEndsAt = {};
 
-  // ─── UI ──────────────────────────────────────────────────────────────────────
   const dot       = document.getElementById('conn-dot');
   const overlay   = document.getElementById('overlay');
   const countEl   = document.getElementById('count');
@@ -379,7 +368,6 @@
     });
   }, 500);
 
-  // ─── WEBSOCKET ───────────────────────────────────────────────────────────────
   function connect() {
     if (!window.location.host) {
       setConnected('reconnecting');
