@@ -53,29 +53,36 @@
       line-height: 0.82;
       margin: 0.08rem 0 0.14rem;
       letter-spacing: -0.08em;
+      padding-right: 0.08em;
       font-variant-numeric: tabular-nums;
     }
 
     /* Orta Alan: Kat Planı Konteyneri */
     .floorplan-wrapper {
-      width: min(78vw, 430px);
-      max-width: 430px;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      margin: 0.5rem 0 0.2rem;
+      overflow: hidden;
     }
 
     .floorplan-svg {
-      width: 100%;
+      max-width: min(78vw, 430px);
+      max-height: 86%;
+      width: auto;
       height: auto;
       display: block;
+      margin: 3.5vh 0;
       overflow: visible;
     }
 
     /* Mimari Çizgiler */
     .fp-wall {
-      display: none;
+      fill: none;
+      stroke: #b7c2cb;
+      stroke-width: 1;
     }
 
     /* Kabin Kutuları */
@@ -93,6 +100,14 @@
       font-weight: 300;
       fill: #4a535c;
       letter-spacing: 0.06em;
+    }
+
+    .countdown-label {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      fill: #6b5300;
+      pointer-events: none;
     }
 
     .you-are-here {
@@ -145,54 +160,72 @@
   </div>
 
   <div class="floorplan-wrapper">
-    <svg class="floorplan-svg" viewBox="0 0 320 360" xmlns="http://www.w3.org/2000/svg">
+    <svg class="floorplan-svg" viewBox="0 0 260 320" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(-36, 0)">
+      <!-- Dış Duvar: Kabinlerin hemen altında düz kesim -->
+      <path class="fp-wall" d="M 96 8 L 96 256 L 233 256 L 226 8 Z" />
+
       <!-- Sol Sıra Kabinleri (13 - 7) -->
       <g id="left-cabins">
-        <rect id="r13" class="cabin-rect" x="38" y="30" width="28" height="28" />
-        <text x="78" y="48" class="fp-label">13</text>
+        <rect id="r13" class="cabin-rect" fill="#c9d3da" x="100" y="16" width="34" height="30" />
+        <text x="140" y="35" class="fp-label">13</text>
+        <text id="ctd13" class="countdown-label" x="117" y="34" text-anchor="middle"></text>
 
-        <rect id="r12" class="cabin-rect" x="38" y="62" width="28" height="28" />
-        <text x="78" y="80" class="fp-label">12</text>
+        <rect id="r12" class="cabin-rect" fill="#c9d3da" x="100" y="50" width="34" height="30" />
+        <text x="140" y="69" class="fp-label">12</text>
+        <text id="ctd12" class="countdown-label" x="117" y="68" text-anchor="middle"></text>
 
-        <rect id="r11" class="cabin-rect" x="38" y="94" width="28" height="28" />
-        <text x="78" y="112" class="fp-label">11</text>
+        <rect id="r11" class="cabin-rect" fill="#c9d3da" x="100" y="84" width="34" height="30" />
+        <text x="140" y="103" class="fp-label">11</text>
+        <text id="ctd11" class="countdown-label" x="117" y="102" text-anchor="middle"></text>
 
-        <rect id="r10" class="cabin-rect" x="38" y="126" width="28" height="28" />
-        <text x="78" y="144" class="fp-label">10</text>
+        <rect id="r10" class="cabin-rect" fill="#c9d3da" x="100" y="118" width="34" height="30" />
+        <text x="140" y="137" class="fp-label">10</text>
+        <text id="ctd10" class="countdown-label" x="117" y="136" text-anchor="middle"></text>
 
-        <rect id="r09" class="cabin-rect" x="38" y="158" width="28" height="28" />
-        <text x="78" y="176" class="fp-label">9</text>
+        <rect id="r09" class="cabin-rect" fill="#c9d3da" x="100" y="152" width="34" height="30" />
+        <text x="140" y="171" class="fp-label">9</text>
+        <text id="ctd09" class="countdown-label" x="117" y="170" text-anchor="middle"></text>
 
-        <rect id="r08" class="cabin-rect" x="38" y="190" width="28" height="28" />
-        <text x="78" y="208" class="fp-label">8</text>
+        <rect id="r08" class="cabin-rect" fill="#c9d3da" x="100" y="186" width="34" height="30" />
+        <text x="140" y="205" class="fp-label">8</text>
+        <text id="ctd08" class="countdown-label" x="117" y="204" text-anchor="middle"></text>
 
-        <rect id="r07" class="cabin-rect" x="38" y="222" width="28" height="28" />
-        <text x="78" y="240" class="fp-label">7</text>
+        <rect id="r07" class="cabin-rect" fill="#c9d3da" x="100" y="220" width="34" height="30" />
+        <text x="140" y="239" class="fp-label">7</text>
+        <text id="ctd07" class="countdown-label" x="117" y="238" text-anchor="middle"></text>
       </g>
 
-      <!-- Sağ Sıra Kabinleri (1 - 6) -->
+      <!-- Sağ Sıra Kabinleri (1 - 6), düz hizalı sütun, yukarıdan başlıyor -->
       <g id="right-cabins">
-        <rect id="r01" class="cabin-rect" x="210" y="30" width="28" height="28" />
-        <text x="190" y="48" class="fp-label">1</text>
+        <rect id="r01" class="cabin-rect" fill="#c9d3da" x="188" y="16" width="30" height="28" />
+        <text x="228" y="34" class="fp-label">1</text>
+        <text id="ctd01" class="countdown-label" x="203" y="33" text-anchor="middle"></text>
 
-        <rect id="r02" class="cabin-rect" x="210" y="62" width="28" height="28" />
-        <text x="190" y="80" class="fp-label">2</text>
+        <rect id="r02" class="cabin-rect" fill="#c9d3da" x="188" y="48" width="30" height="28" />
+        <text x="228" y="66" class="fp-label">2</text>
+        <text id="ctd02" class="countdown-label" x="203" y="65" text-anchor="middle"></text>
 
-        <rect id="r03" class="cabin-rect" x="210" y="94" width="28" height="28" />
-        <text x="190" y="112" class="fp-label">3</text>
+        <rect id="r03" class="cabin-rect" fill="#c9d3da" x="188" y="80" width="30" height="28" />
+        <text x="228" y="98" class="fp-label">3</text>
+        <text id="ctd03" class="countdown-label" x="203" y="97" text-anchor="middle"></text>
 
-        <rect id="r04" class="cabin-rect" x="210" y="126" width="28" height="28" />
-        <text x="190" y="144" class="fp-label">4</text>
+        <rect id="r04" class="cabin-rect" fill="#c9d3da" x="188" y="112" width="30" height="28" />
+        <text x="228" y="130" class="fp-label">4</text>
+        <text id="ctd04" class="countdown-label" x="203" y="129" text-anchor="middle"></text>
 
-        <rect id="r05" class="cabin-rect" x="210" y="158" width="28" height="28" />
-        <text x="190" y="176" class="fp-label">5</text>
+        <rect id="r05" class="cabin-rect" fill="#c9d3da" x="188" y="144" width="30" height="28" />
+        <text x="228" y="162" class="fp-label">5</text>
+        <text id="ctd05" class="countdown-label" x="203" y="161" text-anchor="middle"></text>
 
-        <rect id="r06" class="cabin-rect" x="210" y="190" width="28" height="28" />
-        <text x="190" y="208" class="fp-label">6</text>
+        <rect id="r06" class="cabin-rect" fill="#c9d3da" x="188" y="176" width="30" height="28" />
+        <text x="228" y="194" class="fp-label">6</text>
+        <text id="ctd06" class="countdown-label" x="203" y="193" text-anchor="middle"></text>
       </g>
 
       <!-- Giriş Yazısı -->
-      <text x="150" y="352" class="you-are-here" text-anchor="middle">YOU ARE HERE</text>
+      <text x="166" y="298" class="you-are-here" text-anchor="middle">YOU ARE HERE</text>
+      </g>
     </svg>
   </div>
 
@@ -212,11 +245,19 @@
   const FILLS = { 
     empty: '#9fe3be',
     full: '#8fa0b0',
-    clearing: '#ffffff'
+    clearing: '#f2e2a8'
   };
 
   let cabins = [];
   let ws = null;
+  let CLEARING_SECONDS = 10;
+  const countdownTimers = {};
+
+  fetch('/api/config').then(r => r.json()).then(cfg => {
+    if (cfg && cfg.clearingToEmptyMs) {
+      CLEARING_SECONDS = Math.round(cfg.clearingToEmptyMs / 1000);
+    }
+  }).catch(() => {});
 
   const countEl = document.getElementById('count');
   const overlay = document.getElementById('overlay');
@@ -224,6 +265,31 @@
   function updateCount() {
     const free = cabins.filter(c => c.state === 'empty').length;
     countEl.textContent = free;
+  }
+
+  function startCountdown(paddedId) {
+    stopCountdown(paddedId);
+    const label = document.getElementById(`ctd${paddedId}`);
+    if (!label) return;
+    let remaining = CLEARING_SECONDS;
+    label.textContent = remaining;
+    countdownTimers[paddedId] = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) {
+        stopCountdown(paddedId);
+      } else {
+        label.textContent = remaining;
+      }
+    }, 1000);
+  }
+
+  function stopCountdown(paddedId) {
+    if (countdownTimers[paddedId]) {
+      clearInterval(countdownTimers[paddedId]);
+      delete countdownTimers[paddedId];
+    }
+    const label = document.getElementById(`ctd${paddedId}`);
+    if (label) label.textContent = '';
   }
 
   function applyState(id, state) {
@@ -236,8 +302,10 @@
     rect.setAttribute('fill', FILLS[state]);
     if (state === 'clearing') {
       rect.style.animation = 'cabinBlink 1.2s ease-in-out infinite';
+      startCountdown(paddedId);
     } else {
       rect.style.animation = '';
+      stopCountdown(paddedId);
     }
     updateCount();
   }
