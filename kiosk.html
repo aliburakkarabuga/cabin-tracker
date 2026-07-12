@@ -7,141 +7,202 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap');
 
     body {
-      font-family: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
-      background: #e9f0f4; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #e8eff3;
       color: #000000;
       width: 100vw;
       height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      cursor: none;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: space-between;
-      height: 96vh; 
-      width: 100%;
-      max-width: 540px;
-      max-height: 1000px;
-      padding: 1.5rem 1rem 0.5rem;
-      margin: auto;
+      padding: 3vh 2vw;
+      overflow: hidden;
+      user-select: none;
     }
 
-    .top { 
-      text-align: center; 
+    /* Üst Alan: Büyük Sayaç */
+    .top-counter {
+      text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
-    .label-top {
-      font-size: 32px;
-      font-weight: 200;
-      letter-spacing: 0.12em;
-      color: #4a5560;
+    .label-top, .label-bottom {
+      font-size: 2.2rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      color: #434c54;
       text-transform: uppercase;
-      line-height: 1.2;
     }
 
     .count {
-      font-size: 140px;
+      font-size: 11rem;
       font-weight: 200;
       color: #000000;
-      line-height: 0.95;
-      margin: 2px 0;
-      letter-spacing: -0.01em;
+      line-height: 0.9;
+      margin: 0.5vh 0;
       font-variant-numeric: tabular-nums;
     }
 
-    .label-bottom {
-      font-size: 30px;
-      font-weight: 200;
-      letter-spacing: 0.12em;
-      color: #4a5560;
-      text-transform: uppercase;
-      line-height: 1.2;
-    }
-
-    .floorplan-container {
-      flex-grow: 1;
+    /* Orta Alan: Mağaza Planı Konteyneri (Ekrana Göre Esnek Büyür) */
+    .floorplan-wrapper {
+      flex: 1;
       width: 100%;
+      max-width: 480px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.5rem 0;
-    }
-
-    .floorplan-container svg {
-      display: block;
-    }
-
-    /* Orijinal plandaki gibi ince mimari hatlar */
-    .fp-wall {
-      fill: none;
-      stroke: #7f95a5;
-      stroke-width: 0.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    
-    .fp-text {
-      font-family: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
-      font-size: 8.5px;
-      fill: #2c353d;
-      font-weight: 500;
-      text-anchor: middle;
-      dominant-baseline: central;
-    }
-
-    .brand {
-      margin-top: 0.2rem;
-      display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      width: 100%;
+      margin: 2vh 0;
     }
-    
-    .zara-logo {
-      font-family: 'Didot', 'Bodoni MT', 'Cormorant Garamond', serif;
-      font-size: 84px; 
+
+    /* Ana Kroki Çerçevesi (Görseldeki gibi ince çizgili mimari plan) */
+    .map-frame {
+      border: 1.5px solid #7f95a5;
+      padding: 20px 20px 10px 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Görseldeki üstten daralan asimetrik mimari çizgiyi simüle eden köşe kırığı */
+    .map-frame::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      width: 40px;
+      height: 120px;
+      background: #e8eff3;
+      border-bottom: 1.5px solid #7f95a5;
+      transform: rotate(15deg);
+      transform-origin: top right;
+      z-index: 1;
+    }
+
+    /* Kabin Bloklarının Düzeni */
+    .columns-container {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      z-index: 2;
+    }
+
+    /* Sol Sıra: 10 Tane Dikey Dizili Kabin (04-13) */
+    .left-column {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 38%;
+    }
+
+    /* Sağ Sıra: Görseldeki gibi daha aşağıdan başlayan bloklar (01-03) */
+    .right-column {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 38%;
+      margin-top: auto; /* Sağ bloğu aşağıya yasla */
+      padding-bottom: 30px;
+    }
+
+    /* Her bir Kabin Kutusu */
+    .cabin-box {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      height: 4.2vh;
+      min-height: 28px;
+    }
+
+    .left-column .cabin-box {
+      flex-direction: row;
+    }
+
+    .right-column .cabin-box {
+      flex-direction: row-reverse; /* Sağ sıranın numaraları içe (sola) baksın */
+    }
+
+    /* Kabinin Renkli Bölümü */
+    .cabin-rect {
+      width: 70%;
+      height: 100%;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Kabin Numarası */
+    .cabin-num {
+      font-size: 0.85rem;
+      color: #7f95a5;
       font-weight: 400;
-      letter-spacing: -0.08em;
-      color: #000000;
-      text-transform: uppercase;
-      transform: scaleX(0.95);
-      line-height: 1;
-    }
-    .zara-logo span {
-      margin-right: -0.05em;
+      width: 30%;
+      text-align: center;
     }
 
+    /* Alt Kısım: Giriş ve You Are Here */
+    .bottom-entrance {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 15px;
+      width: 100%;
+      z-index: 2;
+    }
+
+    .gate-line {
+      width: 50px;
+      height: 12px;
+      border-left: 1.5px solid #7f95a5;
+      border-right: 1.5px solid #7f95a5;
+      border-bottom: 1.5px solid transparent;
+    }
+
+    .you-are-here {
+      font-size: 0.65rem;
+      color: #7f95a5;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Alt Alan: Devasa ZARA Logosu */
+    .brand-footer {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 1vh;
+    }
+
+    .zara-logo {
+      font-family: 'Cormorant Garamond', 'Didot', serif;
+      font-size: 7.5rem;
+      font-weight: 300;
+      letter-spacing: -0.06em;
+      color: #000000;
+      line-height: 0.8;
+      transform: scaleX(0.92);
+    }
+
+    /* Bağlantı Noktası ve Overlay */
     .conn-dot {
       position: fixed;
-      bottom: 1.2rem;
-      right: 1.2rem;
+      bottom: 10px;
+      right: 10px;
       width: 4px;
       height: 4px;
       border-radius: 50%;
-      background: transparent;
     }
-
     .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: #e9f0f4;
-      align-items: center;
-      justify-content: center;
+      background: #e8eff3;
       z-index: 10;
     }
     .overlay.visible { display: flex; }
@@ -151,93 +212,70 @@
 </head>
 <body>
 
-<div class="screen">
-  <div class="top">
-    <p class="label-top">AVAILABLE</p>
-    <p class="count" id="count">—</p>
-    <p class="label-bottom">FREE ROOMS</p>
+  <div class="top-counter">
+    <div class="label-top">AVAILABLE</div>
+    <div class="count" id="count">—</div>
+    <div class="label-bottom">FREE ROOMS</div>
   </div>
 
-  <!-- İlk fotoğraftaki asimetrik mimari koridor ve tam 12 adet kabin düzeni -->
-  <div class="floorplan-container">
-    <svg id="fp" viewBox="0 0 170 340" width="280" xmlns="http://www.w3.org/2000/svg">
-      <!-- Orijinal plandaki asimetrik daralan koridor duvarları (Çakışma yapmayacak şekilde) -->
-      <polyline class="fp-wall" points="40,25 120,25 145,285 145,300" />
-      <polyline class="fp-wall" points="30,25 30,295 72,295 72,305 48,305 48,312" />
-      <line class="fp-wall" x1="58" y1="312" x2="58" y2="324" />
-      <polyline class="fp-wall" points="40,324 82,324 82,318 132,318 132,335" />
+  <div class="floorplan-wrapper">
+    <div class="map-frame">
+      <div class="columns-container">
+        
+        <!-- Sol Kolon (Kabin 04 - 13) -->
+        <div class="left-column">
+          <div class="cabin-box"><div id="r13" class="cabin-rect"></div><div class="cabin-num">13</div></div>
+          <div class="cabin-box"><div id="r12" class="cabin-rect"></div><div class="cabin-num">12</div></div>
+          <div class="cabin-box"><div id="r11" class="cabin-rect"></div><div class="cabin-num">11</div></div>
+          <div class="cabin-box"><div id="r10" class="cabin-rect"></div><div class="cabin-num">10</div></div>
+          <div class="cabin-box"><div id="r09" class="cabin-rect"></div><div class="cabin-num">09</div></div>
+          <div class="cabin-box"><div id="r08" class="cabin-rect"></div><div class="cabin-num">08</div></div>
+          <div class="cabin-box"><div id="r07" class="cabin-rect"></div><div class="cabin-num">07</div></div>
+          <div class="cabin-box"><div id="r06" class="cabin-rect"></div><div class="cabin-num">06</div></div>
+          <div class="cabin-box"><div id="r05" class="cabin-rect"></div><div class="cabin-num">05</div></div>
+          <div class="cabin-box"><div id="r04" class="cabin-rect"></div><div class="cabin-num">04</div></div>
+        </div>
 
-      <!-- Sol Kabin Grubu (8 Adet - Başlangıçta siyah kalmaması için varsayılan gri fill eklendi) -->
-      <g id="left-cabins">
-        <rect id="r12" fill="#8fa0b0" x="42" y="29" width="26" height="21" /><text class="fp-text" x="74" y="40">12</text>
-        <rect id="r11" fill="#8fa0b0" x="42" y="54" width="26" height="21" /><text class="fp-text" x="74" y="65">11</text>
-        <rect id="r10" fill="#8fa0b0" x="42" y="79" width="26" height="21" /><text class="fp-text" x="74" y="90">10</text>
-        <rect id="r9"  fill="#8fa0b0" x="42" y="104" width="26" height="21" /><text class="fp-text" x="74" y="115">09</text>
-        <rect id="r8"  fill="#8fa0b0" x="42" y="129" width="26" height="21" /><text class="fp-text" x="74" y="140">08</text>
-        <rect id="r7"  fill="#8fa0b0" x="42" y="154" width="26" height="21" /><text class="fp-text" x="74" y="165">07</text>
-        <rect id="r6"  fill="#8fa0b0" x="42" y="179" width="26" height="21" /><text class="fp-text" x="74" y="190">06</text>
-        <rect id="r5"  fill="#8fa0b0" x="42" y="204" width="26" height="21" /><text class="fp-text" x="74" y="215">05</text>
-      </g>
+        <!-- Sağ Kolon (Kabin 01 - 03) -->
+        <div class="right-column">
+          <div class="cabin-box"><div id="r03" class="cabin-rect"></div><div class="cabin-num">03</div></div>
+          <div class="cabin-box"><div id="r02" class="cabin-rect"></div><div class="cabin-num">02</div></div>
+          <div class="cabin-box"><div id="r01" class="cabin-rect"></div><div class="cabin-num">01</div></div>
+        </div>
 
-      <!-- Sağ Kabin Grubu (4 Adet) -->
-      <g id="right-cabins">
-        <rect id="r4" fill="#8fa0b0" x="104" y="104" width="24" height="20" /><text class="fp-text" x="87" y="115">04</text>
-        <rect id="r3" fill="#8fa0b0" x="104" y="129" width="24" height="20" /><text class="fp-text" x="87" y="140">03</text>
-        <rect id="r2" fill="#8fa0b0" x="104" y="154" width="24" height="20" /><text class="fp-text" x="87" y="165">02</text>
-        <rect id="r1" fill="#8fa0b0" x="104" y="179" width="24" height="20" /><text class="fp-text" x="87" y="190">01</text>
-      </g>
+      </div>
 
-      <!-- Konum Göstergesi -->
-      <text x="30" y="318" font-size="5" fill="#7f95a5" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.02em">YOU ARE HERE</text>
-    </svg>
+      <!-- Giriş Kapısı Çizgisi ve Yazısı -->
+      <div class="bottom-entrance">
+        <div class="gate-line"></div>
+        <div class="you-are-here">YOU ARE HERE</div>
+      </div>
+    </div>
   </div>
 
-  <div class="brand">
-    <div class="zara-logo">Z<span>A</span>R<span>A</span></div>
+  <div class="brand-footer">
+    <div class="zara-logo">ZARA</div>
   </div>
-</div>
 
-<div class="overlay" id="overlay"></div>
-<div class="conn-dot" id="conn-dot"></div>
+  <div class="overlay" id="overlay"></div>
+  <div class="conn-dot" id="conn-dot"></div>
 
 <script>
-  const params     = new URLSearchParams(window.location.search);
-  const STORE_ID   = params.get('store') || 'store-001';
-  const WS_URL     = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
+  const params   = new URLSearchParams(window.location.search);
+  const STORE_ID = params.get('store') || 'store-001';
+  const WS_URL   = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
 
-  let CLEARING_DURATION_MS = 30 * 1000;
-  fetch('/api/config').then(r => r.json()).then(cfg => {
-    if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
-  }).catch(() => {});
-
-  /* Soldurulmuş renk setleri */
   const FILLS = { 
-    empty: '#a3e4c4',     /* Soldurulmuş yeşil */
-    full: '#8fa0b0',      /* Soldurulmuş gri */
-    clearing: '#ffffff'   /* Beyaz */
+    empty: '#9fe3be',     /* Görseldeki canlı açık yeşil */
+    full: '#8fa0b0',      /* Görseldeki pastel gri/mavi dolu rengi */
+    clearing: '#ffffff'
   };
 
-  let cabins       = [];
-  let ws           = null;
-  let retryTimeout = null;
-  let retryDelay   = 1000;
+  let cabins = [];
+  let ws = null;
 
-  const dot       = document.getElementById('conn-dot');
-  const overlay   = document.getElementById('overlay');
-  const countEl   = document.getElementById('count');
-
-  function goFullscreen() {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
-  document.addEventListener('keydown', e => {
-    if (e.key === 'f' || e.key === 'F') goFullscreen();
-  });
-  document.addEventListener('click', () => goFullscreen());
-
-  function setConnected(state) {
-    dot.className = 'conn-dot' + (state === 'connected' ? ' connected' : state === 'reconnecting' ? ' reconnecting' : '');
-    overlay.classList.toggle('visible', state !== 'connected');
-  }
+  const countEl = document.getElementById('count');
+  const overlay = document.getElementById('overlay');
 
   function updateCount() {
     const free = cabins.filter(c => c.state === 'empty').length;
@@ -245,11 +283,13 @@
   }
 
   function applyState(id, state) {
-    const rect = document.getElementById(`r${id}`);
+    const num = parseInt(id, 10);
+    if (isNaN(num)) return;
+    const paddedId = num < 10 ? `0${num}` : `${num}`;
+    const rect = document.getElementById(`r${paddedId}`);
     if (!rect) return;
 
-    rect.setAttribute('fill', FILLS[state]);
-
+    rect.style.backgroundColor = FILLS[state];
     if (state === 'clearing') {
       rect.style.animation = 'cabinBlink 1.2s ease-in-out infinite';
     } else {
@@ -263,59 +303,36 @@
   }
 
   function connect() {
-    if (!window.location.host) {
-      setConnected('reconnecting');
-      return;
-    }
-
-    if (ws) { ws.onclose = null; ws.close(); }
-
+    if (!window.location.host) return;
     try {
       ws = new WebSocket(WS_URL);
-    } catch (err) {
-      console.error(err);
-      setConnected('reconnecting');
-      scheduleRetry();
+    } catch (e) {
+      setTimeout(connect, 2000);
       return;
     }
 
-    ws.onopen = () => {
-      retryDelay = 1000;
-      setConnected('connected');
-    };
-
+    ws.onopen = () => overlay.classList.remove('visible');
+    
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'init') {
           cabins = data.cabins;
-          if (data.clearingToEmptyMs) CLEARING_DURATION_MS = data.clearingToEmptyMs;
           renderAll();
         }
         if (data.type === 'update') {
-          const cabin = cabins.find(c => c.id === data.id);
+          const cabin = cabins.find(c => parseInt(c.id, 10) === parseInt(data.id, 10));
           if (cabin) cabin.state = data.state;
           applyState(data.id, data.state);
         }
-      } catch (err) {
-        console.error(err);
-      }
+      } catch (err) {}
     };
 
     ws.onclose = () => {
-      setConnected('reconnecting');
-      scheduleRetry();
+      overlay.classList.add('visible');
+      setTimeout(connect, 2000);
     };
-
-    ws.onerror = () => { ws.close(); };
-  }
-
-  function scheduleRetry() {
-    clearTimeout(retryTimeout);
-    retryTimeout = setTimeout(() => {
-      connect();
-      retryDelay = Math.min(retryDelay * 2, 16000);
-    }, retryDelay);
+    ws.onerror = () => ws.close();
   }
 
   connect();
