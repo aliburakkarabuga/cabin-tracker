@@ -16,6 +16,8 @@ Reed Switch (door) → Raspberry Pi → WebSocket Server → Kiosk Screen
 
 ## Pages
 
+⚠️ **Always open these through the running server, never by double-clicking the file.** They talk to the WebSocket/API on `localhost:3000` — opened as a local `file://` page, there's no host for the WebSocket to connect to and the screen will look frozen (kiosk count stuck on "—", dashboard stuck on "Reconnecting").
+
 After starting the server, open:
 
 - `http://localhost:3000/kiosk` - customer-facing cabin availability display
@@ -94,18 +96,20 @@ Environment overrides:
 
 ## API
 
-- `GET /api/health`
+- `GET /api/health` — server status, uptime, connected clients
+- `GET /api/config` — clearing timer duration + store list (used by kiosk/simulator so their countdown never drifts from `config.json`)
 - `GET /api/stores`
 - `GET /api/analytics/:storeId?hours=8`
-- `GET /api/events/:storeId`
+- `GET /api/events/:storeId` — JSON events; add `?format=csv` to download a CSV instead
 
 ## Roadmap
 
+- [x] Persist cabin state and analytics across restarts (`data/state.json`)
+- [x] Buzzer alert when a cabin is occupied too long (dashboard, opt-in via 🔈 Sound)
+- [x] Export analytics CSV (dashboard ⬇ Export CSV button, or `GET /api/events/:storeId?format=csv`)
 - [ ] Raspberry Pi integration with real reed switches
 - [ ] Staff authentication for simulator panel
 - [ ] Deploy server online
-- [ ] Buzzer alert when cabin occupied too long
-- [ ] Export analytics CSV
 
 ## Tech Stack
 

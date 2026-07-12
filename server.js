@@ -4,25 +4,62 @@ const url = require('url');
 const fs = require('fs');
 const path = require('path');
 
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const DEFAULT_CONFIG = {
+  port: 3000,
+  clearingToEmptyMs: 30 * 1000,
+  maxEvents: 5000,
+  dataFile: 'data/state.json',
+  saveDebounceMs: 2000,
+  stores: {
+    'store-001': { name: 'DeFacto Bağcılar AVM', cabinCount: 13 },
+  },
+};
+
+const VALID_STATES = ['empty', 'full', 'clearing'];
+
+function loadConfig(configPath) {
+  let fromFile = {};
+  try {
+    const raw = fs.readFileSync(configPath, 'utf8');
+    fromFile = JSON.parse(raw);
+  } catch (err) {
+    console.warn(`[config] Could not read ${configPath} (${err.code || err.message}). Using defaults.`);
+  }
+
+  const merged = { ...DEFAULT_CONFIG, ...fromFile, stores: { ...DEFAULT_CONFIG.stores, ...(fromFile.stores || {}) } };
+
+  if (process.env.PORT) merged.port = parseInt(process.env.PORT, 10);
+  if (process.env.CLEARING_TO_EMPTY_MS) merged.clearingToEmptyMs = parseInt(process.env.CLEARING_TO_EMPTY_MS, 10);
+
+  return merged;
+}
+
+const CONFIG_PATH = path.join(__dirname, 'config.json');
+const config = loadConfig(CONFIG_PATH);
+
+const PORT = config.port;
+const CLEARING_TO_EMPTY_MS = config.clearingToEmptyMs;
+const MAX_EVENTS = config.maxEvents;
+const STORES = config.stores;
+const DATA_FILE = path.join(__dirname, config.dataFile);
+
 const STATIC_FILES = {
+  '/kiosk': 'kiosk.html',
   '/kiosk.html': 'kiosk.html',
+  '/simulator': 'simulator.html',
   '/simulator.html': 'simulator.html',
+  '/dashboard': 'dashboard.html',
+  '/dashboard.html': 'dashboard.html',
 };
 
-const PORT = 3000;
-const CLEARING_TO_EMPTY_MS = 30 * 1000;
-const CABIN_COUNT = 13;
-const MAX_EVENTS = 5000;
-
-const STORES = {
-  'store-001': { name: 'DeFacto Bağcılar AVM', cabinCount: 13 },
-};
-
+// ─── STATE ─────────────────────────────────────────────────────────────────
 const stores = {};
 const timers = {};
 const dwellStart = {};
 const clearingStart = {};
-const analyticsLog = [];
+let analyticsLog = [];
+let saveTimer = null;
 
 function initStore(storeId) {
   const store = STORES[storeId];
@@ -38,6 +75,59 @@ function initStore(storeId) {
 
 Object.keys(STORES).forEach(initStore);
 
+// ─── PERSISTENCE ───────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    const saved = JSON.parse(raw);
+
+    Object.keys(saved.stores || {}).forEach(storeId => {
+      if (!stores[storeId]) return;
+      const savedCabins = saved.stores[storeId].cabins || [];
+      stores[storeId].cabins.forEach(cabin => {
+        const match = savedCabins.find(c => c.id === cabin.id);
+        if (match && VALID_STATES.includes(match.state)) cabin.state = match.state;
+      });
+    });
+
+    if (Array.isArray(saved.analyticsLog)) {
+      analyticsLog = saved.analyticsLog.slice(-MAX_EVENTS);
+    }
+
+    console.log(`[persistence] Restored state from ${DATA_FILE} (saved ${saved.savedAt || 'unknown time'})`);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log(`[persistence] No prior state file found at ${DATA_FILE}, starting fresh`);
+    } else {
+      console.warn(`[persistence] Failed to load state: ${err.message}. Starting fresh.`);
+    }
+  }
+}
+
+function saveStateNow() {
+  try {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    const snapshot = {
+      savedAt: new Date().toISOString(),
+      stores: Object.fromEntries(
+        Object.entries(stores).map(([id, s]) => [id, { cabins: s.cabins }])
+      ),
+      analyticsLog,
+    };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(snapshot, null, 2));
+  } catch (err) {
+    console.error(`[persistence] Failed to save state: ${err.message}`);
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveStateNow, config.saveDebounceMs);
+}
+
+loadState();
+
+// ─── ANALYTICS ─────────────────────────────────────────────────────────────
 function logEvent(storeId, cabinId, fromState, toState) {
   const now = Date.now();
   const key = `${storeId}-${cabinId}`;
@@ -145,6 +235,7 @@ function getStoreSummary(storeId, sinceMs = 8 * 60 * 60 * 1000) {
   };
 }
 
+// ─── STATE MACHINE ─────────────────────────────────────────────────────────
 function broadcast(storeId, data) {
   const message = JSON.stringify(data);
   wss.clients.forEach(client => {
@@ -155,20 +246,31 @@ function broadcast(storeId, data) {
 }
 
 function setCabinState(storeId, cabinId, newState) {
+  if (!VALID_STATES.includes(newState)) {
+    return { ok: false, changed: false, error: `Invalid state "${newState}". Must be one of: ${VALID_STATES.join(', ')}` };
+  }
+
   const store = stores[storeId];
-  if (!store) return console.warn(`Unknown store: ${storeId}`);
+  if (!store) {
+    return { ok: false, changed: false, error: `Unknown store: ${storeId}` };
+  }
 
   const cabin = store.cabins.find(c => c.id === cabinId);
-  if (!cabin) return console.warn(`Unknown cabin: ${cabinId} in ${storeId}`);
+  if (!cabin) {
+    return { ok: false, changed: false, error: `Unknown cabin: ${cabinId} in ${storeId}` };
+  }
 
   const oldState = cabin.state;
-  if (oldState === newState) return;
+  if (oldState === newState) {
+    return { ok: true, changed: false };
+  }
 
   cabin.state = newState;
   console.log(`[${storeId}] Cabin ${cabinId}: ${oldState} → ${newState}`);
 
-  logEvent(storeId, cabinId, oldState, newState);
+  const event = logEvent(storeId, cabinId, oldState, newState);
   broadcast(storeId, { type: 'update', id: cabinId, state: newState });
+  scheduleSave();
 
   const key = `${storeId}-${cabinId}`;
   if (timers[key]) {
@@ -182,8 +284,11 @@ function setCabinState(storeId, cabinId, newState) {
       setCabinState(storeId, cabinId, 'empty');
     }, CLEARING_TO_EMPTY_MS);
   }
+
+  return { ok: true, changed: true, event };
 }
 
+// ─── HTTP SERVER ───────────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
   const parsed = url.parse(req.url, true);
   const reqPath = parsed.pathname;
@@ -203,6 +308,22 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
+  if (req.method === 'GET' && reqPath === '/api/health') {
+    return res.end(JSON.stringify({
+      status: 'ok',
+      uptimeS: Math.round(process.uptime()),
+      stores: Object.keys(STORES),
+      clientsConnected: wss.clients.size,
+    }));
+  }
+
+  if (req.method === 'GET' && reqPath === '/api/config') {
+    return res.end(JSON.stringify({
+      clearingToEmptyMs: CLEARING_TO_EMPTY_MS,
+      stores: Object.keys(STORES).map(id => ({ id, name: STORES[id].name, cabinCount: STORES[id].cabinCount })),
+    }));
+  }
+
   if (req.method === 'GET' && reqPath === '/api/stores') {
     return res.end(JSON.stringify(Object.keys(STORES).map(id => ({
       id,
@@ -218,14 +339,26 @@ const server = http.createServer((req, res) => {
       res.writeHead(404);
       return res.end(JSON.stringify({ error: 'Store not found' }));
     }
-    const hours = parseInt(parsed.query.hours) || 8;
+    const hours = parseFloat(parsed.query.hours) || 8;
     return res.end(JSON.stringify(getStoreSummary(storeId, hours * 3600000)));
   }
 
   const eventsMatch = reqPath.match(/^\/api\/events\/(.+)$/);
   if (req.method === 'GET' && eventsMatch) {
     const storeId = eventsMatch[1];
+    const format = parsed.query.format;
     const storeEvents = analyticsLog.filter(e => e.storeId === storeId).slice(-200);
+
+    if (format === 'csv') {
+      const header = 'ts,iso,storeId,cabinId,fromState,toState,dwellMs,clearingMs';
+      const rows = storeEvents.map(e =>
+        [e.ts, new Date(e.ts).toISOString(), e.storeId, e.cabinId, e.fromState, e.toState, e.dwellMs ?? '', e.clearingMs ?? ''].join(',')
+      );
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="${storeId}-events.csv"`);
+      return res.end([header, ...rows].join('\n'));
+    }
+
     return res.end(JSON.stringify(storeEvents));
   }
 
@@ -253,6 +386,7 @@ wss.on('connection', (ws, req) => {
     storeId,
     storeName: STORES[storeId].name,
     cabins: stores[storeId].cabins,
+    clearingToEmptyMs: CLEARING_TO_EMPTY_MS,
   }));
 
   ws.isAlive = true;
@@ -262,7 +396,10 @@ wss.on('connection', (ws, req) => {
     try {
       const data = JSON.parse(message);
       if (data.type === 'update') {
-        setCabinState(storeId, data.id, data.state);
+        const result = setCabinState(storeId, Number(data.id), data.state);
+        if (!result.ok) {
+          ws.send(JSON.stringify({ type: 'error', message: result.error }));
+        }
       }
     } catch (err) {
       console.error(`[${storeId}] Invalid message:`, err.message);
@@ -283,13 +420,53 @@ const pingInterval = setInterval(() => {
 
 wss.on('close', () => clearInterval(pingInterval));
 
-server.listen(PORT, () => {
-  console.log(`\nCabin Tracker Server — http://localhost:${PORT}`);
-  console.log(`Stores: ${Object.keys(STORES).join(', ')}`);
-  console.log(`Clearing timer: ${CLEARING_TO_EMPTY_MS / 1000}s`);
-  console.log(`\nAPI endpoints:`);
-  console.log(`  GET /api/stores`);
-  console.log(`  GET /api/analytics/:storeId?hours=8`);
-  console.log(`  GET /api/events/:storeId`);
-  console.log(`\nWebSocket: ws://localhost:${PORT}?store=store-001\n`);
-});
+function start() {
+  server.listen(PORT, () => {
+    console.log(`\nCabin Tracker Server — http://localhost:${PORT}`);
+    console.log(`Stores: ${Object.keys(STORES).join(', ')}`);
+    console.log(`Clearing timer: ${CLEARING_TO_EMPTY_MS / 1000}s`);
+    console.log(`\nPages:`);
+    console.log(`  GET /kiosk`);
+    console.log(`  GET /simulator`);
+    console.log(`  GET /dashboard`);
+    console.log(`\nAPI endpoints:`);
+    console.log(`  GET /api/health`);
+    console.log(`  GET /api/config`);
+    console.log(`  GET /api/stores`);
+    console.log(`  GET /api/analytics/:storeId?hours=8`);
+    console.log(`  GET /api/events/:storeId[?format=csv]`);
+    console.log(`\nWebSocket: ws://localhost:${PORT}?store=store-001\n`);
+  });
+
+  function shutdown(signal) {
+    console.log(`\n[${signal}] Shutting down — saving state…`);
+    clearTimeout(saveTimer);
+    saveStateNow();
+    clearInterval(pingInterval);
+    wss.close(() => {
+      server.close(() => process.exit(0));
+    });
+    setTimeout(() => process.exit(0), 2000).unref();
+  }
+
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+}
+
+if (require.main === module) {
+  start();
+}
+
+module.exports = {
+  server,
+  config,
+  loadConfig,
+  stores,
+  STORES,
+  setCabinState,
+  getStoreSummary,
+  logEvent,
+  saveStateNow,
+  loadState,
+  start,
+};

@@ -352,6 +352,8 @@
           <button class="range-tab" onclick="setRange(8,this)">8h</button>
           <button class="range-tab" onclick="setRange(24,this)">24h</button>
         </div>
+        <button class="range-tab" id="sound-toggle" onclick="toggleSound()" title="Play a sound on critical alerts">🔈 Sound</button>
+        <button class="range-tab" onclick="exportCsv()">⬇ Export CSV</button>
       </div>
     </div>
 
@@ -364,8 +366,11 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
-  const API       = 'http://localhost:3000';
-  const WS_BASE   = 'ws://localhost:3000';
+  // Derived from the current page location, so this works whether the
+  // dashboard is opened as http://localhost:3000/dashboard or from another
+  // host/port (e.g. a LAN IP) — no more hardcoded localhost.
+  const API       = `${window.location.protocol}//${window.location.host}`;
+  const WS_BASE   = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
   const REFRESH_S = 30; // analytics kaç saniyede bir yenilenir
 
   const urlParams   = new URLSearchParams(window.location.search);
@@ -378,6 +383,51 @@
   let cabins        = [];          // live state
   let dwellStart    = {};          // cabinId → timestamp (ne zaman doldu)
   let analyticsData = null;
+  let soundOn       = false;
+  const criticalAlertsSeen = new Set(); // avoids re-beeping every render tick
+
+  // ─── SOUND (buzzer alert for cabins occupied too long) ───────────────────────
+  function toggleSound() {
+    soundOn = !soundOn;
+    document.getElementById('sound-toggle').textContent = soundOn ? '🔊 Sound' : '🔈 Sound';
+    document.getElementById('sound-toggle').classList.toggle('active', soundOn);
+  }
+
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
+    } catch { /* Web Audio unsupported/blocked — fail silently */ }
+  }
+
+  function checkCriticalAlerts(longStay) {
+    if (!soundOn) return;
+    longStay.filter(ls => ls.mins >= 30).forEach(ls => {
+      const key = `${ls.id}`;
+      if (!criticalAlertsSeen.has(key)) {
+        criticalAlertsSeen.add(key);
+        beep();
+      }
+    });
+    // clear "seen" flags for cabins no longer in critical state
+    [...criticalAlertsSeen].forEach(key => {
+      if (!longStay.some(ls => `${ls.id}` === key && ls.mins >= 30)) criticalAlertsSeen.delete(key);
+    });
+  }
+
+  // ─── EXPORT ───────────────────────────────────────────────────────────────────
+  function exportCsv() {
+    if (!currentStore) return;
+    window.open(`${API}/api/events/${currentStore}?format=csv`, '_blank');
+  }
 
   // ─── BOOT ────────────────────────────────────────────────────────────────────
   loadStores();
@@ -432,7 +482,20 @@
     if (ws) { ws.onclose = null; ws.close(); }
     clearTimeout(retryTimeout);
 
-    ws = new WebSocket(`${WS_BASE}?store=${currentStore}`);
+    if (!window.location.host) {
+      setConn('stale');
+      document.getElementById('conn-label').textContent = 'Open via http://localhost:3000/dashboard';
+      return;
+    }
+
+    try {
+      ws = new WebSocket(`${WS_BASE}?store=${currentStore}`);
+    } catch (err) {
+      console.error('WebSocket construction failed:', err);
+      setConn('stale');
+      retryTimeout = setTimeout(() => { connectWS(); retryDelay = Math.min(retryDelay * 2, 16000); }, retryDelay);
+      return;
+    }
 
     ws.onopen = () => {
       retryDelay = 1000;
@@ -531,6 +594,7 @@
         if (mins >= 15) longStay.push({ id: c.id, mins });
       }
     });
+    checkCriticalAlerts(longStay);
 
     const content = document.getElementById('content');
     content.innerHTML = `

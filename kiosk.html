@@ -238,7 +238,13 @@
   const STORE_ID   = params.get('store') || 'store-001';
   const WS_URL     = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
 
-  const CLEARING_DURATION_MS = 30 * 1000;
+  // Fallback only — the real value is fetched from /api/config (and also
+  // arrives on every WS `init` message), so this never drifts from the
+  // server's config.json if someone changes the timer duration there.
+  let CLEARING_DURATION_MS = 30 * 1000;
+  fetch('/api/config').then(r => r.json()).then(cfg => {
+    if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
+  }).catch(() => {});
 
   const FILLS   = { empty: '#5cb85c', full: '#4a6080', clearing: '#a0a878' };
   const STROKES = { empty: '#4a9e4a', full: '#3a5070', clearing: '#888870' };
@@ -310,9 +316,26 @@
 
   // ─── WEBSOCKET w/ RECONNECT ───────────────────────────────────────────────────
   function connect() {
+    if (!window.location.host) {
+      // Opened as a local file (file://) instead of served by the Node
+      // server — WebSocket has no host to connect to and the API fetch
+      // above will have failed too. Fail loudly instead of silently
+      // freezing on the placeholder "—".
+      setConnected('reconnecting');
+      overlay.querySelector('p').textContent = 'Open via http://localhost:3000/kiosk — not as a local file';
+      return;
+    }
+
     if (ws) { ws.onclose = null; ws.close(); }
 
-    ws = new WebSocket(WS_URL);
+    try {
+      ws = new WebSocket(WS_URL);
+    } catch (err) {
+      console.error('WebSocket construction failed:', err);
+      setConnected('reconnecting');
+      scheduleRetry();
+      return;
+    }
 
     ws.onopen = () => {
       retryDelay = 1000; // başarılı bağlantıda sıfırla
@@ -326,6 +349,7 @@
         if (data.type === 'init') {
           cabins = data.cabins;
           if (data.storeName) storeEl.textContent = data.storeName;
+          if (data.clearingToEmptyMs) CLEARING_DURATION_MS = data.clearingToEmptyMs;
           renderAll();
         }
 

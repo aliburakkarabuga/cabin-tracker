@@ -240,7 +240,12 @@
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
   const urlParams   = new URLSearchParams(window.location.search);
-  const CLEARING_MS = 30 * 1000;
+  // Fallback only — kept in sync with the server via /api/config and the
+  // WS `init` message below, so it can't silently drift from config.json.
+  let CLEARING_MS = 30 * 1000;
+  fetch('/api/config').then(r => r.json()).then(cfg => {
+    if (cfg.clearingToEmptyMs) CLEARING_MS = cfg.clearingToEmptyMs;
+  }).catch(() => {});
   const LABELS      = { empty: 'Available', full: 'Occupied', clearing: 'Preparing' };
   const BTN_LABELS  = { empty: 'Empty', full: 'Full', clearing: 'Clearing' };
 
@@ -293,7 +298,21 @@
     const dot   = document.getElementById('conn-dot');
     const label = document.getElementById('conn-label');
 
-    ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${currentStore}`);
+    if (!window.location.host) {
+      dot.className = 'conn-dot reconnecting';
+      label.textContent = 'Open via http://localhost:3000/simulator — not as a local file';
+      return;
+    }
+
+    try {
+      ws = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${currentStore}`);
+    } catch (err) {
+      console.error('WebSocket construction failed:', err);
+      dot.className = 'conn-dot reconnecting';
+      label.textContent = 'Reconnecting…';
+      retryTimeout = setTimeout(() => { connect(); retryDelay = Math.min(retryDelay * 2, 16000); }, retryDelay);
+      return;
+    }
 
     ws.onopen = () => {
       retryDelay = 1000;
@@ -307,6 +326,7 @@
         if (data.type === 'init') {
           cabins = data.cabins;
           document.getElementById('header-sub').textContent = data.storeName || currentStore;
+          if (data.clearingToEmptyMs) CLEARING_MS = data.clearingToEmptyMs;
           renderGrid();
         }
         if (data.type === 'update') {
