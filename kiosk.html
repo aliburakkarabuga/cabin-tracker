@@ -7,12 +7,11 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Zara uses Helvetica Neue or a very clean, light sans-serif */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap');
 
     body {
       font-family: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
-      background: #e1ecf4; /* Subtle desaturated soft blue background matching the image */
+      background: #e9f0f4; 
       color: #000000;
       width: 100vw;
       height: 100vh;
@@ -30,11 +29,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      height: 90vh; 
+      height: 96vh; 
       width: 100%;
-      max-width: 420px;
-      max-height: 860px;
-      padding: 3rem 1.5rem 2rem;
+      max-width: 540px;
+      max-height: 1000px;
+      padding: 1.5rem 1rem 0.5rem;
       margin: auto;
     }
 
@@ -46,74 +45,81 @@
     }
 
     .label-top {
-      font-size: 26px;
+      font-size: 32px;
       font-weight: 200;
       letter-spacing: 0.12em;
-      color: #333333;
+      color: #4a5560;
       text-transform: uppercase;
       line-height: 1.2;
     }
 
     .count {
-      font-size: 110px;
+      font-size: 140px;
       font-weight: 200;
       color: #000000;
       line-height: 0.95;
-      margin: 4px 0 2px 0;
+      margin: 2px 0;
       letter-spacing: -0.01em;
       font-variant-numeric: tabular-nums;
     }
 
     .label-bottom {
-      font-size: 24px;
+      font-size: 30px;
       font-weight: 200;
       letter-spacing: 0.12em;
-      color: #333333;
+      color: #4a5560;
       text-transform: uppercase;
       line-height: 1.2;
     }
 
-    .floorplan {
-      position: relative;
+    .floorplan-container {
       flex-grow: 1;
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 100%;
-      padding: 1rem 0;
+      padding: 0.5rem 0;
     }
-    .floorplan svg { display: block; }
 
-    /* Ultra-thin architectural lines matching the ZARA terminal screen */
+    .floorplan-container svg {
+      display: block;
+    }
+
+    /* Minimalist ve net mimari hatlar */
     .fp-wall {
       fill: none;
       stroke: #7f95a5;
-      stroke-width: 0.6;
+      stroke-width: 1.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     
     .fp-text {
       font-family: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
-      font-size: 5px;
-      fill: #596b79;
-      font-weight: 400;
+      font-size: 8px;
+      fill: #2c353d;
+      font-weight: 500;
+      text-anchor: middle;
+      dominant-baseline: central;
     }
 
     .brand {
-      margin-top: 1rem;
+      margin-top: 0.2rem;
       display: flex;
       justify-content: center;
       align-items: center;
+      width: 100%;
     }
     
-    /* ZARA Logotype emulation (Tight overlapping serif typography) */
     .zara-logo {
       font-family: 'Didot', 'Bodoni MT', 'Cormorant Garamond', serif;
-      font-size: 42px;
+      font-size: 84px; 
       font-weight: 400;
       letter-spacing: -0.08em;
       color: #000000;
       text-transform: uppercase;
       transform: scaleX(0.95);
+      line-height: 1;
     }
     .zara-logo span {
       margin-right: -0.05em;
@@ -127,31 +133,20 @@
       height: 4px;
       border-radius: 50%;
       background: transparent;
-      transition: background 0.3s;
     }
-    .conn-dot.connected   { background: transparent; }
-    .conn-dot.reconnecting { background: #7f95a5; animation: blink 1s infinite; }
 
     .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: #e1ecf4;
+      background: #e9f0f4;
       align-items: center;
       justify-content: center;
       z-index: 10;
     }
     .overlay.visible { display: flex; }
-    .overlay p {
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #7f95a5;
-      font-weight: 300;
-    }
 
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    @keyframes cabinBlink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes cabinBlink { 0%,100%{opacity:1} 50%{opacity:0.4} }
   </style>
 </head>
 <body>
@@ -163,46 +158,41 @@
     <p class="label-bottom">FREE ROOMS</p>
   </div>
 
-  <div class="floorplan">
-    <!-- Exactly maps the 19 cabins and architectural layout of the uploaded image -->
-    <svg id="fp" viewBox="0 0 160 360" width="160" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outer structural boundary lines -->
-      <polyline class="fp-wall" points="40,30 115,30 138,285 138,300" />
-      <polyline class="fp-wall" points="32,30 32,295 72,295 72,305 48,305 48,312" />
-      <line class="fp-wall" x1="58" y1="312" x2="58" y2="324" />
-      <polyline class="fp-wall" points="40,324 82,324 82,318 128,318 128,335" />
-
-      <!-- Left Cabin Row Group (Cabins 02 to 19 - even/odd alignment matching layout) -->
-      <!-- Green fill: #72db9d, Busy fill: #718fae, Clearing fill: #ccebda -->
-      <!-- Injected rects are completely sharp with no border strokes inside the architectural block -->
+  <!-- Temiz, çakışmayan ve simetrik yeni mimari kat planı -->
+  <div class="floorplan-container">
+    <svg id="fp" viewBox="0 0 200 340" width="260" xmlns="http://www.w3.org/2000/svg">
+      <!-- Dış Mimari Duvarlar -->
+      <polyline class="fp-wall" points="15,10 185,10 185,300 135,300 135,330 65,330 65,300 15,300 15,10" />
+      
+      <!-- Sol Kabin Sırası (Simetrik ve Hizalı 10 Kabin) -->
       <g id="left-cabins">
-        <!-- 19 --> <rect id="r19" x="42" y="34" width="22" height="20" /> <text class="fp-text" x="69" y="46">19</text>
-        <!-- 18 --> <rect id="r18" x="42" y="57" width="22" height="20" /> <text class="fp-text" x="69" y="69">18</text>
-        <!-- 17 --> <rect id="r17" x="42" y="80" width="22" height="20" /> <text class="fp-text" x="69" y="92">17</text>
-        <!-- 16 --> <rect id="r16" x="42" y="103" width="22" height="20" /> <text class="fp-text" x="69" y="115">16</text>
-        <!-- 15 --> <rect id="r15" x="42" y="126" width="22" height="20" /> <text class="fp-text" x="69" y="138">15</text>
-        <!-- 14 --> <rect id="r14" x="42" y="149" width="22" height="20" /> <text class="fp-text" x="69" y="161">14</text>
-        <!-- 12 --> <rect id="r12" x="42" y="172" width="22" height="20" /> <text class="fp-text" x="69" y="184">12</text>
-        <!-- 10 --> <rect id="r10" x="42" y="195" width="22" height="20" /> <text class="fp-text" x="69" y="207">10</text>
-        <!-- 08 --> <rect id="r8"  x="42" y="218" width="22" height="20" /> <text class="fp-text" x="69" y="230">08</text>
-        <!-- 06 --> <rect id="r6"  x="42" y="241" width="22" height="20" /> <text class="fp-text" x="69" y="253">06</text>
-        <!-- 04 --> <rect id="r4"  x="42" y="264" width="22" height="20" /> <text class="fp-text" x="69" y="276">04</text>
-        <!-- 02 --> <rect id="r2"  x="42" y="287" width="22" height="8" />  <text class="fp-text" x="69" y="293">02</text>
+        <rect id="r19" x="20" y="15" width="32" height="24" /><text class="fp-text" x="36" y="27">19</text>
+        <rect id="r18" x="20" y="43" width="32" height="24" /><text class="fp-text" x="36" y="55">18</text>
+        <rect id="r17" x="20" y="71" width="32" height="24" /><text class="fp-text" x="36" y="83">17</text>
+        <rect id="r16" x="20" y="99" width="32" height="24" /><text class="fp-text" x="36" y="111">16</text>
+        <rect id="r15" x="20" y="127" width="32" height="24" /><text class="fp-text" x="36" y="139">15</text>
+        <rect id="r14" x="20" y="155" width="32" height="24" /><text class="fp-text" x="36" y="167">14</text>
+        <rect id="r12" x="20" y="183" width="32" height="24" /><text class="fp-text" x="36" y="195">12</text>
+        <rect id="r10" x="20" y="211" width="32" height="24" /><text class="fp-text" x="36" y="223">10</text>
+        <rect id="r8"  x="20" y="239" width="32" height="24" /><text class="fp-text" x="36" y="251">08</text>
+        <rect id="r6"  x="20" y="267" width="32" height="24" /><text class="fp-text" x="36" y="279">06</text>
       </g>
 
-      <!-- Right Cabin Row Group -->
+      <!-- Sağ Kabin Sırası (Simetrik ve Hizalı 9 Kabin) -->
       <g id="right-cabins">
-        <!-- 13 --> <rect id="r13" x="98" y="176" width="20" height="18" /> <text class="fp-text" x="84" y="188">13</text>
-        <!-- 11 --> <rect id="r11" x="98" y="197" width="20" height="18" /> <text class="fp-text" x="84" y="209">11</text>
-        <!-- 09 --> <rect id="r9"  x="98" y="218" width="20" height="18" /> <text class="fp-text" x="84" y="230">09</text>
-        <!-- 07 --> <rect id="r7"  x="98" y="239" width="20" height="18" /> <text class="fp-text" x="84" y="251">07</text>
-        <!-- 05 --> <rect id="r5"  x="98" y="260" width="28" height="26" /> <text class="fp-text" x="84" y="275">05</text>
-        <!-- 03 --> <rect id="r3"  x="98" y="289" width="20" height="18" /> <text class="fp-text" x="84" y="301">03</text>
-        <!-- 01 --> <rect id="r1"  x="98" y="310" width="20" height="18" /> <text class="fp-text" x="84" y="322">01</text>
+        <rect id="r13" x="148" y="15" width="32" height="24" /><text class="fp-text" x="164" y="27">13</text>
+        <rect id="r11" x="148" y="43" width="32" height="24" /><text class="fp-text" x="164" y="55">11</text>
+        <rect id="r9"  x="148" y="71" width="32" height="24" /><text class="fp-text" x="164" y="83">09</text>
+        <rect id="r7"  x="148" y="99" width="32" height="24" /><text class="fp-text" x="164" y="111">07</text>
+        <rect id="r5"  x="148" y="127" width="32" height="24" /><text class="fp-text" x="164" y="139">05</text>
+        <rect id="r3"  x="148" y="155" width="32" height="24" /><text class="fp-text" x="164" y="167">03</text>
+        <rect id="r1"  x="148" y="183" width="32" height="24" /><text class="fp-text" x="164" y="195">01</text>
+        <rect id="r4"  x="148" y="211" width="32" height="24" /><text class="fp-text" x="164" y="223">04</text>
+        <rect id="r2"  x="148" y="239" width="32" height="24" /><text class="fp-text" x="164" y="251">02</text>
       </g>
 
-      <!-- You are here indicator label -->
-      <text x="32" y="318" font-size="4" fill="#7f95a5" font-family="Inter, sans-serif" font-weight="400" letter-spacing="0.02em">YOU ARE HERE</text>
+      <!-- Giriş ve Konum Belirteci -->
+      <text x="100" y="318" font-size="6" fill="#7f95a5" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.04em" text-anchor="middle">YOU ARE HERE</text>
     </svg>
   </div>
 
@@ -211,10 +201,7 @@
   </div>
 </div>
 
-<div class="overlay" id="overlay">
-  <p>Connecting</p>
-</div>
-
+<div class="overlay" id="overlay"></div>
 <div class="conn-dot" id="conn-dot"></div>
 
 <script>
@@ -227,11 +214,11 @@
     if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
   }).catch(() => {});
 
-  /* Exact color matching from the Zara panel photo provided */
+  /* Beğendiğin soldurulmuş renk tonları korundu */
   const FILLS = { 
-    empty: '#72db9d',     /* Perfect soft vibrant pastel green */
-    full: '#718fae',      /* The precise desaturated slate blue/gray */
-    clearing: '#ccebda'   /* Muted fade green for cleaning stage */
+    empty: '#a3e4c4',     /* Soldurulmuş pastel yeşil */
+    full: '#8fa0b0',      /* Soldurulmuş kapalı gri */
+    clearing: '#ffffff'   /* Beyaz */
   };
 
   let cabins       = [];
@@ -249,7 +236,6 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'f' || e.key === 'F') goFullscreen();
   });
-  // Auto-request fullscreen on click anywhere to act as a proper display kiosk
   document.addEventListener('click', () => goFullscreen());
 
   function setConnected(state) {
@@ -269,7 +255,7 @@
     rect.setAttribute('fill', FILLS[state]);
 
     if (state === 'clearing') {
-      rect.style.animation = 'cabinBlink 1.5s ease-in-out infinite';
+      rect.style.animation = 'cabinBlink 1.2s ease-in-out infinite';
     } else {
       rect.style.animation = '';
     }
