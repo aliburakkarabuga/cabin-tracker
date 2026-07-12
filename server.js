@@ -12,11 +12,14 @@ const DEFAULT_CONFIG = {
   dataFile: 'data/state.json',
   saveDebounceMs: 2000,
   stores: {
-    'store-001': { name: 'DeFacto Bağcılar AVM', cabinCount: 13 },
+    'store-001': { name: 'ZARA', cabinCount: 13 },
   },
 };
 
 const VALID_STATES = ['empty', 'full', 'clearing'];
+const DEMO_FULL_CABINS = {
+  'store-001': [1, 3, 4, 6, 9],
+};
 
 function loadConfig(configPath) {
   let fromFile = {};
@@ -61,14 +64,22 @@ const clearingStart = {};
 let analyticsLog = [];
 let saveTimer = null;
 
+function applyDemoState(storeId, cabins) {
+  const fullCabins = DEMO_FULL_CABINS[storeId] || [];
+  cabins.forEach(cabin => {
+    cabin.state = fullCabins.includes(cabin.id) ? 'full' : 'empty';
+  });
+  return cabins;
+}
+
 function initStore(storeId) {
   const store = STORES[storeId];
   if (!store) return;
   stores[storeId] = {
-    cabins: Array.from({ length: store.cabinCount }, (_, i) => ({
+    cabins: applyDemoState(storeId, Array.from({ length: store.cabinCount }, (_, i) => ({
       id: i + 1,
       state: 'empty',
-    })),
+    }))),
   };
   console.log(`[${storeId}] Store initialized — ${store.cabinCount} cabins`);
 }
@@ -88,6 +99,7 @@ function loadState() {
         const match = savedCabins.find(c => c.id === cabin.id);
         if (match && VALID_STATES.includes(match.state)) cabin.state = match.state;
       });
+      applyDemoState(storeId, stores[storeId].cabins);
     });
 
     if (Array.isArray(saved.analyticsLog)) {
