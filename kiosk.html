@@ -11,9 +11,8 @@
 
     body {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(255,255,255,0.9), transparent),
-        linear-gradient(180deg, #eef2f7 0%, #e3e9f1 100%);
+      /* İçi karartmayan, aydınlık, temiz ve parlak kristal arka plan */
+      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f4f7fa 100%);
       width: 100vw;
       height: 100vh;
       display: flex;
@@ -29,156 +28,161 @@
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      height: 90vh;
-      max-height: 720px;
+      height: 92vh; 
+      width: 100%;
+      max-width: 400px; /* Geniş ekranlarda da dikey kule gibi zarif durması için */
+      max-height: 820px;
       padding: 2.5rem 1.5rem 2rem;
+      margin: auto;
     }
 
     .top { text-align: center; }
 
     .label {
-      font-size: 11px;
-      letter-spacing: 0.4em;
+      font-size: 12px;
+      letter-spacing: 0.35em;
       text-transform: uppercase;
-      color: #8a94a3;
+      color: #64748b; /* Daha net, okunabilir gri */
       font-family: 'Inter', sans-serif;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .count {
-      font-size: 108px;
+      font-size: 116px;
       font-weight: 300;
-      color: #14181f;
-      line-height: 1;
-      margin: 10px 0;
-      letter-spacing: -0.02em;
+      color: #0f172a;
+      line-height: 1.1;
+      margin: 8px 0;
+      letter-spacing: -0.03em;
       transition: color 0.5s ease, transform 0.3s ease;
       font-variant-numeric: tabular-nums;
     }
 
-    .count.pulse { transform: scale(1.06); }
-    .count.zero { color: #b3432f; }
+    .count.pulse { transform: scale(1.08); }
+    .count.zero { color: #ef4444; font-weight: 400; }
 
     .rule {
-      width: 44px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, #b8c2d0, transparent);
-      margin: 6px auto 0;
+      width: 60px;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+      margin: 8px auto 0;
     }
 
+    /* İstenmeyen arkadaki tüm kutular, gölgeler ve buzlu camlar tamamen temizlendi */
     .floorplan {
       position: relative;
-      padding: 1.75rem 2.25rem;
-      background: rgba(255,255,255,0.55);
-      border-radius: 18px;
-      box-shadow:
-        0 1px 2px rgba(20,24,31,0.04),
-        0 12px 32px -12px rgba(20,24,31,0.14),
-        inset 0 1px 0 rgba(255,255,255,0.8);
-      backdrop-filter: blur(6px);
+      padding: 1rem 0;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      backdrop-filter: none;
     }
     .floorplan svg { display: block; }
 
-    /* Brand wordmark — stylised standalone treatment, not the trademarked
-       DEFACTO logotype itself (that's proprietary brand IP), just a
-       premium-retail-feeling presentation of the store name. */
+    /* Canlı ve net mimari duvar çizgileri */
+    .fp-wall {
+      fill: #e2e8f0;
+      stroke: #cbd5e1;
+      stroke-width: 1.5;
+    }
+    
+    .fp-floor {
+      fill: #f1f5f9;
+      stroke: #cbd5e1;
+      stroke-width: 0.75;
+    }
+
+    /* Modern ve prestijli marka alanı */
     .brand {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     .brand-city {
       font-family: 'Inter', sans-serif;
-      font-size: 9px;
-      letter-spacing: 0.35em;
+      font-size: 10px;
+      letter-spacing: 0.3em;
       text-transform: uppercase;
-      color: #9aa4b2;
-      font-weight: 500;
+      color: #94a3b8;
+      font-weight: 600;
     }
     .store-name {
       font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 30px;
+      font-size: 32px;
       font-weight: 500;
-      letter-spacing: 0.42em;
-      color: #14181f;
+      letter-spacing: 0.38em;
+      color: #0f172a;
       text-transform: uppercase;
       text-align: center;
-      min-height: 34px;
-      padding-left: 0.42em; /* compensate trailing letter-spacing so it stays centered */
+      padding-left: 0.38em;
     }
 
-    /* Connection dot — sağ alt */
     .conn-dot {
       position: fixed;
-      bottom: 1.1rem;
-      right: 1.1rem;
-      width: 6px;
-      height: 6px;
+      bottom: 1.2rem;
+      right: 1.2rem;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: #c7cfda;
-      box-shadow: 0 0 0 3px rgba(0,0,0,0.02);
+      background: #cbd5e1;
       transition: background 0.3s;
     }
-    .conn-dot.connected   { background: #2f7a4d; }
-    .conn-dot.reconnecting { background: #d99a2b; animation: blink 1s infinite; }
+    .conn-dot.connected   { background: #10b981; }
+    .conn-dot.reconnecting { background: #f59e0b; animation: blink 1s infinite; }
 
-    /* Fullscreen hint */
     .fullscreen-hint {
       position: fixed;
-      bottom: 1.1rem;
+      bottom: 1.2rem;
       left: 50%;
       transform: translateX(-50%);
       font-size: 9px;
-      letter-spacing: 0.22em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #aab3c0;
+      color: #94a3b8;
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       font-weight: 500;
-      border: 0.5px solid #ccd4de;
-      border-radius: 3px;
-      padding: 6px 12px;
-      background: rgba(255,255,255,0.4);
-      transition: color 0.2s, border-color 0.2s;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.7);
+      transition: all 0.2s;
     }
-    .fullscreen-hint:hover { color: #667; border-color: #aab3c0; }
+    .fullscreen-hint:hover { color: #475569; border-color: #cbd5e1; background: #fff; }
 
-    /* Reconnect overlay */
     .overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(238, 242, 247, 0.9);
-      backdrop-filter: blur(3px);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
       z-index: 10;
-      text-align: center;
-      padding: 0 2rem;
     }
     .overlay.visible { display: flex; }
     .overlay p {
-      font-size: 10px;
-      letter-spacing: 0.22em;
+      font-size: 11px;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #8a94a3;
+      color: #64748b;
       font-family: 'Inter', sans-serif;
-      max-width: 320px;
     }
     .overlay .spinner {
-      width: 22px;
-      height: 22px;
-      border: 1.5px solid #d5dbe3;
-      border-top-color: #8a94a3;
+      width: 24px;
+      height: 24px;
+      border: 2px solid #e2e8f0;
+      border-top-color: #64748b;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
 
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
     @keyframes spin  { to { transform: rotate(360deg); } }
+    @keyframes cabinBlink { 0%,100%{opacity:1} 50%{opacity:0.75} }
   </style>
 </head>
 <body>
@@ -193,83 +197,81 @@
 
   <div class="floorplan">
     <svg id="fp" viewBox="0 0 200 320" width="200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Left column wall -->
-      <rect x="20" y="8"   width="68" height="268" rx="2" fill="#d7dee7" stroke="#b9c3d1" stroke-width="1"/>
-      <!-- Right column wall -->
-      <rect x="106" y="88" width="68" height="188" rx="2" fill="#d7dee7" stroke="#b9c3d1" stroke-width="1"/>
-      <!-- Connector -->
-      <rect x="20" y="262" width="154" height="14" rx="1" fill="#c7d0dc" stroke="#b9c3d1" stroke-width="0.5"/>
+      <!-- Ana mimari duvar hatları -->
+      <rect class="fp-wall" x="20" y="8"   width="68" height="268" rx="3"/>
+      <rect class="fp-wall" x="106" y="88" width="68" height="188" rx="3"/>
+      <rect class="fp-floor" x="20" y="262" width="154" height="14" rx="1"/>
 
-      <!-- LEFT COLUMN: Cabins 01–08 -->
+      <!-- SOL SÜTUN: Kabinler 01–08 -->
       <g id="c1">
-        <rect id="r1" x="23" y="11"  width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="29"  text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">01</text>
-        <text id="t1" x="54" y="35"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r1" x="23" y="12"  width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="28"  text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">01</text>
+        <text id="t1" x="54" y="34"  text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c2">
-        <rect id="r2" x="23" y="42"  width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="60"  text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">02</text>
-        <text id="t2" x="54" y="66"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r2" x="23" y="43"  width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="59"  text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">02</text>
+        <text id="t2" x="54" y="65"  text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c3">
-        <rect id="r3" x="23" y="73"  width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="91"  text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">03</text>
-        <text id="t3" x="54" y="97"  text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r3" x="23" y="74"  width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="90"  text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">03</text>
+        <text id="t3" x="54" y="96"  text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c4">
-        <rect id="r4" x="23" y="104" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="122" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">04</text>
-        <text id="t4" x="54" y="128" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r4" x="23" y="105" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="121" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">04</text>
+        <text id="t4" x="54" y="127" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c5">
-        <rect id="r5" x="23" y="135" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="153" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">05</text>
-        <text id="t5" x="54" y="159" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r5" x="23" y="136" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="152" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">05</text>
+        <text id="t5" x="54" y="158" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c6">
-        <rect id="r6" x="23" y="166" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="184" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">06</text>
-        <text id="t6" x="54" y="190" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r6" x="23" y="167" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="183" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">06</text>
+        <text id="t6" x="54" y="189" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c7">
-        <rect id="r7" x="23" y="197" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="215" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">07</text>
-        <text id="t7" x="54" y="221" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r7" x="23" y="198" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="214" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">07</text>
+        <text id="t7" x="54" y="220" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c8">
-        <rect id="r8" x="23" y="228" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="54" y="246" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">08</text>
-        <text id="t8" x="54" y="252" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r8" x="23" y="229" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="54" y="245" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">08</text>
+        <text id="t8" x="54" y="251" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
 
-      <!-- RIGHT COLUMN: Cabins 09–13 -->
+      <!-- SAĞ SÜTUN: Kabinler 09–13 -->
       <g id="c9">
-        <rect id="r9"  x="109" y="91"  width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="140" y="109" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">09</text>
-        <text id="t9"  x="140" y="115" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r9"  x="109" y="92"  width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="140" y="108" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">09</text>
+        <text id="t9"  x="140" y="114" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c10">
-        <rect id="r10" x="109" y="122" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="140" y="140" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">10</text>
-        <text id="t10" x="140" y="146" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r10" x="109" y="123" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="140" y="139" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">10</text>
+        <text id="t10" x="140" y="145" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c11">
-        <rect id="r11" x="109" y="153" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="140" y="171" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">11</text>
-        <text id="t11" x="140" y="177" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r11" x="109" y="154" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="140" y="170" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">11</text>
+        <text id="t11" x="140" y="176" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c12">
-        <rect id="r12" x="109" y="184" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="140" y="202" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">12</text>
-        <text id="t12" x="140" y="208" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r12" x="109" y="185" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="140" y="201" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">12</text>
+        <text id="t12" x="140" y="207" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
       <g id="c13">
-        <rect id="r13" x="109" y="215" width="62" height="28" rx="1" fill="#5c8a6e" stroke="#4a7159" stroke-width="0.5"/>
-        <text x="140" y="233" text-anchor="middle" font-size="7" fill="white" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.12em">13</text>
-        <text id="t13" x="140" y="239" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.75)" font-family="Inter, sans-serif"></text>
+        <rect id="r13" x="109" y="216" width="62" height="26" rx="2" stroke-width="1"/>
+        <text x="140" y="232" text-anchor="middle" font-size="8" fill="white" font-family="Inter, sans-serif" font-weight="600" letter-spacing="0.05em">13</text>
+        <text id="t13" x="140" y="238" text-anchor="middle" font-size="5.5" fill="rgba(255,255,255,0.85)" font-family="Inter, sans-serif" font-weight="500"></text>
       </g>
 
-      <text x="100" y="295" text-anchor="middle" font-size="6" fill="#a3adba" font-family="Inter, sans-serif" letter-spacing="0.28em" font-weight="500">FLOOR PLAN</text>
+      <text x="100" y="296" text-anchor="middle" font-size="6.5" fill="#94a3b8" font-family="Inter, sans-serif" letter-spacing="0.25em" font-weight="600">FLOOR PLAN</text>
     </svg>
   </div>
 
@@ -279,7 +281,6 @@
   </div>
 </div>
 
-<!-- Reconnect overlay -->
 <div class="overlay" id="overlay">
   <div class="spinner"></div>
   <p>Reconnecting…</p>
@@ -290,27 +291,32 @@
 
 <script>
   // ─── CONFIG ──────────────────────────────────────────────────────────────────
-  // URL param ile override edilebilir: kiosk.html?store=store-002
   const params     = new URLSearchParams(window.location.search);
   const STORE_ID   = params.get('store') || 'store-001';
   const WS_URL     = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}?store=${STORE_ID}`;
 
-  // Fallback only — the real value is fetched from /api/config (and also
-  // arrives on every WS `init` message), so this never drifts from the
-  // server's config.json if someone changes the timer duration there.
   let CLEARING_DURATION_MS = 30 * 1000;
   fetch('/api/config').then(r => r.json()).then(cfg => {
     if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
   }).catch(() => {});
 
-  const FILLS   = { empty: '#5c8a6e', full: '#3f4f68', clearing: '#a89768' };
-  const STROKES = { empty: '#4a7159', full: '#333f54', clearing: '#8a7c56' };
+  // YENİ CANLI VE ENERJİK RENK PALETİ
+  const FILLS   = { 
+    empty: '#10b981',    /* Canlı Zümrüt Yeşili (Boş/Müsait) */
+    full: '#1e3a8a',     /* Derin Safir Mavisi (Dolu) */
+    clearing: '#f59e0b'  /* Enerjik Altın Sarısı (Temizleniyor) */
+  };
+  const STROKES = { 
+    empty: '#059669', 
+    full: '#172554', 
+    clearing: '#d97706' 
+  };
 
   // ─── STATE ───────────────────────────────────────────────────────────────────
   let cabins       = [];
   let ws           = null;
   let retryTimeout = null;
-  let retryDelay   = 1000;       // ilk retry 1s, her seferinde 2x artar, max 16s
+  let retryDelay   = 1000;
   const timerEndsAt = {};
 
   // ─── UI ──────────────────────────────────────────────────────────────────────
@@ -327,7 +333,6 @@
   });
 
   function setConnected(state) {
-    // state: 'connected' | 'reconnecting' | 'disconnected'
     dot.className = 'conn-dot' + (state === 'connected' ? ' connected' : state === 'reconnecting' ? ' reconnecting' : '');
     overlay.classList.toggle('visible', state !== 'connected');
   }
@@ -351,7 +356,7 @@
     rect.setAttribute('stroke', STROKES[state]);
 
     if (state === 'clearing') {
-      rect.style.animation = 'blink 1.5s ease-in-out infinite';
+      rect.style.animation = 'cabinBlink 1.2s ease-in-out infinite';
       timerEndsAt[id] = Date.now() + CLEARING_DURATION_MS;
     } else {
       rect.style.animation = '';
@@ -365,7 +370,6 @@
     cabins.forEach(c => applyState(c.id, c.state));
   }
 
-  // Countdown timer (clearing state)
   setInterval(() => {
     const now = Date.now();
     Object.keys(timerEndsAt).forEach(id => {
@@ -375,15 +379,11 @@
     });
   }, 500);
 
-  // ─── WEBSOCKET w/ RECONNECT ───────────────────────────────────────────────────
+  // ─── WEBSOCKET ───────────────────────────────────────────────────────────────
   function connect() {
     if (!window.location.host) {
-      // Opened as a local file (file://) instead of served by the Node
-      // server — WebSocket has no host to connect to and the API fetch
-      // above will have failed too. Fail loudly instead of silently
-      // freezing on the placeholder "—".
       setConnected('reconnecting');
-      overlay.querySelector('p').textContent = 'Open via http://localhost:3000/kiosk — not as a local file';
+      overlay.querySelector('p').textContent = 'Open via http://localhost:3000/kiosk';
       return;
     }
 
@@ -392,35 +392,33 @@
     try {
       ws = new WebSocket(WS_URL);
     } catch (err) {
-      console.error('WebSocket construction failed:', err);
+      console.error(err);
       setConnected('reconnecting');
       scheduleRetry();
       return;
     }
 
     ws.onopen = () => {
-      retryDelay = 1000; // başarılı bağlantıda sıfırla
+      retryDelay = 1000;
       setConnected('connected');
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-
         if (data.type === 'init') {
           cabins = data.cabins;
           if (data.storeName) storeEl.textContent = data.storeName;
           if (data.clearingToEmptyMs) CLEARING_DURATION_MS = data.clearingToEmptyMs;
           renderAll();
         }
-
         if (data.type === 'update') {
           const cabin = cabins.find(c => c.id === data.id);
           if (cabin) cabin.state = data.state;
           applyState(data.id, data.state);
         }
       } catch (err) {
-        console.error('Parse error:', err);
+        console.error(err);
       }
     };
 
@@ -429,20 +427,17 @@
       scheduleRetry();
     };
 
-    ws.onerror = () => {
-      ws.close(); // onclose tetiklenecek, retry oradan
-    };
+    ws.onerror = () => { ws.close(); };
   }
 
   function scheduleRetry() {
     clearTimeout(retryTimeout);
     retryTimeout = setTimeout(() => {
       connect();
-      retryDelay = Math.min(retryDelay * 2, 16000); // exponential backoff, max 16s
+      retryDelay = Math.min(retryDelay * 2, 16000);
     }, retryDelay);
   }
 
-  // ─── BOOT ─────────────────────────────────────────────────────────────────────
   connect();
 </script>
 </body>
