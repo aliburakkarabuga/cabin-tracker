@@ -85,18 +85,18 @@
       display: block;
     }
 
-    /* Minimalist ve net mimari hatlar */
+    /* Orijinal plandaki gibi ince mimari hatlar */
     .fp-wall {
       fill: none;
       stroke: #7f95a5;
-      stroke-width: 1.2;
+      stroke-width: 0.8;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
     
     .fp-text {
       font-family: 'Helvetica Neue', Helvetica, 'Inter', Arial, sans-serif;
-      font-size: 8px;
+      font-size: 8.5px;
       fill: #2c353d;
       font-weight: 500;
       text-anchor: middle;
@@ -158,41 +158,37 @@
     <p class="label-bottom">FREE ROOMS</p>
   </div>
 
-  <!-- Temiz, çakışmayan ve simetrik yeni mimari kat planı -->
+  <!-- İlk fotoğraftaki asimetrik mimari koridor ve tam 12 adet kabin düzeni -->
   <div class="floorplan-container">
-    <svg id="fp" viewBox="0 0 200 340" width="260" xmlns="http://www.w3.org/2000/svg">
-      <!-- Dış Mimari Duvarlar -->
-      <polyline class="fp-wall" points="15,10 185,10 185,300 135,300 135,330 65,330 65,300 15,300 15,10" />
-      
-      <!-- Sol Kabin Sırası (Simetrik ve Hizalı 10 Kabin) -->
+    <svg id="fp" viewBox="0 0 170 340" width="280" xmlns="http://www.w3.org/2000/svg">
+      <!-- Orijinal plandaki asimetrik daralan koridor duvarları (Çakışma yapmayacak şekilde) -->
+      <polyline class="fp-wall" points="40,25 120,25 145,285 145,300" />
+      <polyline class="fp-wall" points="30,25 30,295 72,295 72,305 48,305 48,312" />
+      <line class="fp-wall" x1="58" y1="312" x2="58" y2="324" />
+      <polyline class="fp-wall" points="40,324 82,324 82,318 132,318 132,335" />
+
+      <!-- Sol Kabin Grubu (8 Adet - Başlangıçta siyah kalmaması için varsayılan gri fill eklendi) -->
       <g id="left-cabins">
-        <rect id="r19" x="20" y="15" width="32" height="24" /><text class="fp-text" x="36" y="27">19</text>
-        <rect id="r18" x="20" y="43" width="32" height="24" /><text class="fp-text" x="36" y="55">18</text>
-        <rect id="r17" x="20" y="71" width="32" height="24" /><text class="fp-text" x="36" y="83">17</text>
-        <rect id="r16" x="20" y="99" width="32" height="24" /><text class="fp-text" x="36" y="111">16</text>
-        <rect id="r15" x="20" y="127" width="32" height="24" /><text class="fp-text" x="36" y="139">15</text>
-        <rect id="r14" x="20" y="155" width="32" height="24" /><text class="fp-text" x="36" y="167">14</text>
-        <rect id="r12" x="20" y="183" width="32" height="24" /><text class="fp-text" x="36" y="195">12</text>
-        <rect id="r10" x="20" y="211" width="32" height="24" /><text class="fp-text" x="36" y="223">10</text>
-        <rect id="r8"  x="20" y="239" width="32" height="24" /><text class="fp-text" x="36" y="251">08</text>
-        <rect id="r6"  x="20" y="267" width="32" height="24" /><text class="fp-text" x="36" y="279">06</text>
+        <rect id="r12" fill="#8fa0b0" x="42" y="29" width="26" height="21" /><text class="fp-text" x="74" y="40">12</text>
+        <rect id="r11" fill="#8fa0b0" x="42" y="54" width="26" height="21" /><text class="fp-text" x="74" y="65">11</text>
+        <rect id="r10" fill="#8fa0b0" x="42" y="79" width="26" height="21" /><text class="fp-text" x="74" y="90">10</text>
+        <rect id="r9"  fill="#8fa0b0" x="42" y="104" width="26" height="21" /><text class="fp-text" x="74" y="115">09</text>
+        <rect id="r8"  fill="#8fa0b0" x="42" y="129" width="26" height="21" /><text class="fp-text" x="74" y="140">08</text>
+        <rect id="r7"  fill="#8fa0b0" x="42" y="154" width="26" height="21" /><text class="fp-text" x="74" y="165">07</text>
+        <rect id="r6"  fill="#8fa0b0" x="42" y="179" width="26" height="21" /><text class="fp-text" x="74" y="190">06</text>
+        <rect id="r5"  fill="#8fa0b0" x="42" y="204" width="26" height="21" /><text class="fp-text" x="74" y="215">05</text>
       </g>
 
-      <!-- Sağ Kabin Sırası (Simetrik ve Hizalı 9 Kabin) -->
+      <!-- Sağ Kabin Grubu (4 Adet) -->
       <g id="right-cabins">
-        <rect id="r13" x="148" y="15" width="32" height="24" /><text class="fp-text" x="164" y="27">13</text>
-        <rect id="r11" x="148" y="43" width="32" height="24" /><text class="fp-text" x="164" y="55">11</text>
-        <rect id="r9"  x="148" y="71" width="32" height="24" /><text class="fp-text" x="164" y="83">09</text>
-        <rect id="r7"  x="148" y="99" width="32" height="24" /><text class="fp-text" x="164" y="111">07</text>
-        <rect id="r5"  x="148" y="127" width="32" height="24" /><text class="fp-text" x="164" y="139">05</text>
-        <rect id="r3"  x="148" y="155" width="32" height="24" /><text class="fp-text" x="164" y="167">03</text>
-        <rect id="r1"  x="148" y="183" width="32" height="24" /><text class="fp-text" x="164" y="195">01</text>
-        <rect id="r4"  x="148" y="211" width="32" height="24" /><text class="fp-text" x="164" y="223">04</text>
-        <rect id="r2"  x="148" y="239" width="32" height="24" /><text class="fp-text" x="164" y="251">02</text>
+        <rect id="r4" fill="#8fa0b0" x="104" y="104" width="24" height="20" /><text class="fp-text" x="87" y="115">04</text>
+        <rect id="r3" fill="#8fa0b0" x="104" y="129" width="24" height="20" /><text class="fp-text" x="87" y="140">03</text>
+        <rect id="r2" fill="#8fa0b0" x="104" y="154" width="24" height="20" /><text class="fp-text" x="87" y="165">02</text>
+        <rect id="r1" fill="#8fa0b0" x="104" y="179" width="24" height="20" /><text class="fp-text" x="87" y="190">01</text>
       </g>
 
-      <!-- Giriş ve Konum Belirteci -->
-      <text x="100" y="318" font-size="6" fill="#7f95a5" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.04em" text-anchor="middle">YOU ARE HERE</text>
+      <!-- Konum Göstergesi -->
+      <text x="30" y="318" font-size="5" fill="#7f95a5" font-family="Inter, sans-serif" font-weight="500" letter-spacing="0.02em">YOU ARE HERE</text>
     </svg>
   </div>
 
@@ -214,10 +210,10 @@
     if (cfg.clearingToEmptyMs) CLEARING_DURATION_MS = cfg.clearingToEmptyMs;
   }).catch(() => {});
 
-  /* Beğendiğin soldurulmuş renk tonları korundu */
+  /* Soldurulmuş renk setleri */
   const FILLS = { 
-    empty: '#a3e4c4',     /* Soldurulmuş pastel yeşil */
-    full: '#8fa0b0',      /* Soldurulmuş kapalı gri */
+    empty: '#a3e4c4',     /* Soldurulmuş yeşil */
+    full: '#8fa0b0',      /* Soldurulmuş gri */
     clearing: '#ffffff'   /* Beyaz */
   };
 
