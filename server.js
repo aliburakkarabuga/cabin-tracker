@@ -12,7 +12,7 @@ const DEFAULT_CONFIG = {
   dataFile: 'data/state.json',
   saveDebounceMs: 2000,
   stores: {
-    'store-001': { name: 'ZARA', cabinCount: 13 },
+    'store-001': { name: 'DeFacto Bağcılar AVM', cabinCount: 13 },
   },
 };
 
@@ -422,17 +422,19 @@ wss.on('connection', (ws, req) => {
   ws.on('error', (err) => console.error(`[${storeId}] WS error:`, err.message));
 });
 
-const pingInterval = setInterval(() => {
-  wss.clients.forEach(ws => {
-    if (!ws.isAlive) return ws.terminate();
-    ws.isAlive = false;
-    ws.ping();
-  });
-}, 30000);
-
-wss.on('close', () => clearInterval(pingInterval));
+let pingInterval;
 
 function start() {
+  pingInterval = setInterval(() => {
+    wss.clients.forEach(ws => {
+      if (!ws.isAlive) return ws.terminate();
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000);
+
+  wss.on('close', () => clearInterval(pingInterval));
+
   server.listen(PORT, () => {
     console.log(`\nCabin Tracker Server — http://localhost:${PORT}`);
     console.log(`Stores: ${Object.keys(STORES).join(', ')}`);
