@@ -76,13 +76,13 @@ Edit `config.json` to change stores, cabin counts, port, timer duration, or pers
 
 ```json
 {
-  "port": 3000,
-  "clearingToEmptyMs": 30000,
+  "port": ,
+  "clearingToEmptyMs": 0,
   "maxEvents": 5000,
   "dataFile": "data/state.json",
   "stores": {
     "store-001": {
-      "name": "DeFacto Bağcılar AVM",
+      "name": "Mall of Istanbul ZARA",
       "cabinCount": 13
     }
   }
